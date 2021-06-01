@@ -208,7 +208,8 @@ class TestApp(EWrapper, EClient):
     def historicalTicksOperations(self):
         # ! [reqhistoricalticks]
         self.reqHistoricalTicks(18001, ContractSamples.SimpleFuture(),
-                                "20210526 09:39:33", "", 1000, "TRADES", 1, True, [])
+                                "20210527 09:39:33", "", 1000, "TRADES", 1, True, [])
+
         # self.reqHistoricalTicks(18002, ContractSamples.SimpleFuture(),
         #                         "20210525 09:39:33", "", 10, "BID_ASK", 1, True, [])
         # self.reqHistoricalTicks(18003, ContractSamples.SimpleFuture(),
@@ -249,6 +250,7 @@ class TestApp(EWrapper, EClient):
         for tick in ticks:
             print("HistoricalTickLast. ReqId:", reqId, tick)
 
+        self.disconnect()
     # ! [historicaltickslast]
 
     def historicalData(self, reqId:int, bar: BarData):

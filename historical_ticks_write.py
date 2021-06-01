@@ -1,4 +1,3 @@
-import pandas as pd
 import csv
 import argparse
 import datetime
@@ -9,6 +8,8 @@ import logging
 import os.path
 import time
 
+
+import pandas as pd
 import datetime
 from ibapi import wrapper
 from ibapi import utils
@@ -94,17 +95,19 @@ class TestApp(EWrapper, EClient):
         self.globalCancelOnly = False
         self.simplePlaceOid = None
         self._my_errors = {}
+        file_path = f"data/ticks_file.csv"
+        if not os.path.exists("data"):
+            os.makedirs("data")
+        self.fd = open(file_path, "w")
 
 
-
-
-    # def dumpReqAnsErrSituation(self):
-    #     logging.debug("%s\t%s\t%s\t%s" % ("ReqId", "#Req", "#Ans", "#Err"))
-    #     for reqId in sorted(self.reqId2nReq.keys()):
-    #         nReq = self.reqId2nReq.get(reqId, 0)
-    #         nAns = self.reqId2nAns.get(reqId, 0)
-    #         nErr = self.reqId2nErr.get(reqId, 0)
-    #         logging.debug("%d\t%d\t%s\t%d" % (reqId, nReq, nAns, nErr))
+    def dumpReqAnsErrSituation(self):
+        logging.debug("%s\t%s\t%s\t%s" % ("ReqId", "#Req", "#Ans", "#Err"))
+        for reqId in sorted(self.reqId2nReq.keys()):
+            nReq = self.reqId2nReq.get(reqId, 0)
+            nAns = self.reqId2nAns.get(reqId, 0)
+            nErr = self.reqId2nErr.get(reqId, 0)
+            logging.debug("%d\t%d\t%s\t%d" % (reqId, nReq, nAns, nErr))
 
     @iswrapper
     # ! [connectack]
@@ -139,32 +142,8 @@ class TestApp(EWrapper, EClient):
         else:
             print("Executing requests")
             # self.tickDataOperations_req()
-            # self.historicalTicksOperations()
-            # self.reqGlobalCancel()
-            # self.marketDataTypeOperations()
-            # self.accountOperations_req()
-            # self.tickDataOperations_req()
-            # self.marketDepthOperations_req()
-            # self.realTimeBarsOperations_req()
-            self.historicalDataOperations_req()
-            # self.optionsOperations_req()
-            # self.marketScannersOperations_req()
-            # self.fundamentalsOperations_req()
-            # self.bulletinsOperations_req()
-            # self.contractOperations()
-            # self.newsOperations_req()
-            # self.miscelaneousOperations()
-            # self.linkingOperations()
-            # self.financialAdvisorOperations()
-            # self.orderOperations_req()
-            # self.rerouteCFDOperations()
-            # self.marketRuleOperations()
-            # self.pnlOperations_req()
-            # self.histogramOperations_req()
-            # self.continuousFuturesOperations_req()
-            # self.historicalTicksOperations()
-            # self.tickByTickOperations_req()
-            # self.whatIfOrderOperations()
+            self.historicalTicksOperations()
+
             print("Executing requests ... finished")
 
     def keyboardInterrupt(self):
@@ -182,7 +161,7 @@ class TestApp(EWrapper, EClient):
         # self.tickDataOperations_cancel()
         # self.marketDepthOperations_cancel()
         # self.realTimeBarsOperations_cancel()
-        self.historicalDataOperations_cancel()
+        # self.historicalDataOperations_cancel()
         # self.optionsOperations_cancel()
         # self.marketScanners_cancel()
         # self.fundamentalsOperations_cancel()
@@ -191,7 +170,7 @@ class TestApp(EWrapper, EClient):
         # self.pnlOperations_cancel()
         # self.histogramOperations_cancel()
         # self.continuousFuturesOperations_cancel()
-        # self.tickByTickOperations_cancel()
+        self.tickByTickOperations_cancel()
         print("Executing cancels ... finished")
 
     def nextOrderId(self):
@@ -229,67 +208,60 @@ class TestApp(EWrapper, EClient):
         self.reqTickByTickData(19008, ContractSamples.SimpleFuture(), "MidPoint", 10, True)
         # ! [reqtickbytickwithhist]
 
+
     @printWhenExecuting
-    def historicalDataOperations_req(self, num_days = "7 D"):
-        self.num_days = num_days
-        # Requesting historical data
-        # ! [reqHeadTimeStamp]
-        # self.reqHeadTimeStamp(4101, ContractSamples.USStockAtSmart(), "TRADES", 0, 1)
-        # ! [reqHeadTimeStamp]
+    def historicalTicksOperations(self):
+        # ! [reqhistoricalticks]
+        self.reqHistoricalTicks(18001, ContractSamples.SimpleFuture(),
+                                "20210527 09:39:33", "", 1000, "TRADES", 1, True, [])
 
-        # ! [reqhistoricaldata]
-        # this is where it ends
-        queryTime = (datetime.datetime.today() - datetime.timedelta(days=5)).strftime("%Y%m%d %H:%M:%S")
-        # self.reqHistoricalData(4102, ContractSamples.SimpleFuture(), queryTime,
-        #                        "1 M", "1 day", "MIDPOINT", 1, 1, False, [])
-        # this is number of days back
-        self.reqHistoricalData(4103, ContractSamples.SimpleFuture(), queryTime,
-                               self.num_days, "1 day", "TRADES", 1, 1, False, [])
-
-        # self.reqHistoricalData(4104, ContractSamples.SimpleFuture(), "",
-        #                        "1 M", "1 day", "MIDPOINT", 1, 1, True, [])
-        # ! [reqhistoricaldata]
-
-
-    def historicalData(self, reqId: int, bar: BarData):
-        print("HistoricalData. ReqId:", reqId, "BarData.", bar)
-
-    # ! [historicaldata]
+        # self.reqHistoricalTicks(18002, ContractSamples.SimpleFuture(),
+        #                         "20210525 09:39:33", "", 10, "BID_ASK", 1, True, [])
+        # self.reqHistoricalTicks(18003, ContractSamples.SimpleFuture(),
+        #                         "20210525 09:39:33", "", 10, "MIDPOINT", 1, True, [])
+        # ! [reqhistoricalticks]
 
 
     @printWhenExecuting
-    def historicalDataOperations_cancel(self):
-        # ! [cancelHeadTimestamp]
-        # self.cancelHeadTimeStamp(4101)
-        # ! [cancelHeadTimestamp]
-        # ! [cancelHeadTimestamp]
+    def tickDataOperations_req(self):
+        self.reqMarketDataType(MarketDataTypeEnum.DELAYED_FROZEN)
 
-        # Canceling historical data requests
-        # ! [cancelhistoricaldata]
-        # self.cancelHistoricalData(4102)
-        self.cancelHistoricalData(4103)
-        # self.cancelHistoricalData(4104)
-        # ! [cancelhistoricaldata]
+        #self.reqMktData(1015, ContractSamples.SimpleFuture(), "", False, False, [])
+        #self.reqMktData(1999, ContractSamples.USSPYStockAtSmart(), "233,236,258", False, False, [])
+        #self.reqHistoricalData(2, ContractSamples.ContFut(), "", "1 Y", "1 hour", "BID_ASK", 0, 1, False, []);
+        self.reqTickByTickData(19002, ContractSamples.SimpleFuture(), "AllLast", 0, False)
 
     @iswrapper
-    # ! [historicaldataend]
-    def historicalDataEnd(self, reqId: int, start: str, end: str):
-        super().historicalDataEnd(reqId, start, end)
-        print("HistoricalDataEnd. ReqId:", reqId, "from", start, "to", end)
+    # ! [historicalticks]
+    def historicalTicks(self, reqId: int, ticks: ListOfHistoricalTick, done: bool):
+        for tick in ticks:
+            print("HistoricalTick. ReqId:", reqId, tick)
+            self.fd.write(f"{tick}\n")
 
-    # ! [historicaldataend]
+    # ! [historicalticks]
 
     @iswrapper
-    # ! [historicalDataUpdate]
-    def historicalDataUpdate(self, reqId: int, bar: BarData):
-        print("HistoricalDataUpdate. ReqId:", reqId, "BarData.", bar)
+    # ! [historicalticksbidask]
+    def historicalTicksBidAsk(self, reqId: int, ticks: ListOfHistoricalTickBidAsk,
+                              done: bool):
+        for tick in ticks:
+            print("HistoricalTickBidAsk. ReqId:", reqId, tick)
 
-    # ! [historicalDataUpdate]
+    # ! [historicalticksbidask]
+
+    @iswrapper
+    # ! [historicaltickslast]
+    def historicalTicksLast(self, reqId: int, ticks: ListOfHistoricalTickLast,
+                            done: bool):
+        for tick in ticks:
+            print("HistoricalTickLast. ReqId:", reqId, tick)
+
+        # self.disconnect()
+    # ! [historicaltickslast]
 
     def historicalData(self, reqId:int, bar: BarData):
         print("HistoricalData. ReqId:", reqId, "BarData.", bar)
         logging.debug("ReqId:", reqId, "BarData.", bar)
-        # self.disconnect()
 
 
     @iswrapper
@@ -349,8 +321,8 @@ def main():
     # tc.reqMktData(1101, ContractSamples.USStockAtSmart(), "", False, None)
     # print(tc.reqId2nReq)
     # sys.exit(1)
+    app = TestApp()
     try:
-        app = TestApp()
         if args.global_cancel:
             app.globalCancelOnly = True
         # ! [connect]
@@ -358,16 +330,11 @@ def main():
         # ! [connect]
         print("serverVersion:%s connectionTime:%s" % (app.serverVersion(),
                                                       app.twsConnectionTime()))
-
         # ! [clientrun]
         app.run()
         # ! [clientrun]
     except:
         raise
-    # finally:
-    #     app.dumpTestCoverageSituation()
-    #     app.dumpReqAnsErrSituation()
-
 
 
 if __name__ == "__main__":

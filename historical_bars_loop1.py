@@ -1,4 +1,3 @@
-import pandas as pd
 import csv
 import argparse
 import datetime
@@ -9,6 +8,8 @@ import logging
 import os.path
 import time
 
+
+import pandas as pd
 import datetime
 from ibapi import wrapper
 from ibapi import utils
@@ -95,16 +96,13 @@ class TestApp(EWrapper, EClient):
         self.simplePlaceOid = None
         self._my_errors = {}
 
-
-
-
-    # def dumpReqAnsErrSituation(self):
-    #     logging.debug("%s\t%s\t%s\t%s" % ("ReqId", "#Req", "#Ans", "#Err"))
-    #     for reqId in sorted(self.reqId2nReq.keys()):
-    #         nReq = self.reqId2nReq.get(reqId, 0)
-    #         nAns = self.reqId2nAns.get(reqId, 0)
-    #         nErr = self.reqId2nErr.get(reqId, 0)
-    #         logging.debug("%d\t%d\t%s\t%d" % (reqId, nReq, nAns, nErr))
+    def dumpReqAnsErrSituation(self):
+        logging.debug("%s\t%s\t%s\t%s" % ("ReqId", "#Req", "#Ans", "#Err"))
+        for reqId in sorted(self.reqId2nReq.keys()):
+            nReq = self.reqId2nReq.get(reqId, 0)
+            nAns = self.reqId2nAns.get(reqId, 0)
+            nErr = self.reqId2nErr.get(reqId, 0)
+            logging.debug("%d\t%d\t%s\t%d" % (reqId, nReq, nAns, nErr))
 
     @iswrapper
     # ! [connectack]
@@ -147,6 +145,7 @@ class TestApp(EWrapper, EClient):
             # self.marketDepthOperations_req()
             # self.realTimeBarsOperations_req()
             self.historicalDataOperations_req()
+
             # self.optionsOperations_req()
             # self.marketScannersOperations_req()
             # self.fundamentalsOperations_req()
@@ -230,8 +229,7 @@ class TestApp(EWrapper, EClient):
         # ! [reqtickbytickwithhist]
 
     @printWhenExecuting
-    def historicalDataOperations_req(self, num_days = "7 D"):
-        self.num_days = num_days
+    def historicalDataOperations_req(self):
         # Requesting historical data
         # ! [reqHeadTimeStamp]
         # self.reqHeadTimeStamp(4101, ContractSamples.USStockAtSmart(), "TRADES", 0, 1)
@@ -243,9 +241,11 @@ class TestApp(EWrapper, EClient):
         # self.reqHistoricalData(4102, ContractSamples.SimpleFuture(), queryTime,
         #                        "1 M", "1 day", "MIDPOINT", 1, 1, False, [])
         # this is number of days back
-        self.reqHistoricalData(4103, ContractSamples.SimpleFuture(), queryTime,
-                               self.num_days, "1 day", "TRADES", 1, 1, False, [])
-
+        days_back = ["3 D", "10 D"]
+        for i in days_back:
+            self.reqHistoricalData(4103, ContractSamples.SimpleFuture(), queryTime,
+                               i, "1 day", "TRADES", 1, 1, False, [])
+            time.sleep(5)
         # self.reqHistoricalData(4104, ContractSamples.SimpleFuture(), "",
         #                        "1 M", "1 day", "MIDPOINT", 1, 1, True, [])
         # ! [reqhistoricaldata]
@@ -289,7 +289,8 @@ class TestApp(EWrapper, EClient):
     def historicalData(self, reqId:int, bar: BarData):
         print("HistoricalData. ReqId:", reqId, "BarData.", bar)
         logging.debug("ReqId:", reqId, "BarData.", bar)
-        # self.disconnect()
+
+
 
 
     @iswrapper
@@ -349,24 +350,21 @@ def main():
     # tc.reqMktData(1101, ContractSamples.USStockAtSmart(), "", False, None)
     # print(tc.reqId2nReq)
     # sys.exit(1)
-    try:
-        app = TestApp()
-        if args.global_cancel:
-            app.globalCancelOnly = True
-        # ! [connect]
-        app.connect("127.0.0.1", args.port, clientId=0)
-        # ! [connect]
-        print("serverVersion:%s connectionTime:%s" % (app.serverVersion(),
-                                                      app.twsConnectionTime()))
+    app = TestApp()
 
-        # ! [clientrun]
-        app.run()
-        # ! [clientrun]
-    except:
-        raise
-    # finally:
-    #     app.dumpTestCoverageSituation()
-    #     app.dumpReqAnsErrSituation()
+
+    if args.global_cancel:
+        app.globalCancelOnly = True
+    # ! [connect]
+    app.connect("127.0.0.1", args.port, clientId=0)
+    # ! [connect]
+    print("serverVersion:%s connectionTime:%s" % (app.serverVersion(),
+                                                  app.twsConnectionTime()))
+    # ! [clientrun]
+    app.run()
+
+    # ! [clientrun]
+
 
 
 
