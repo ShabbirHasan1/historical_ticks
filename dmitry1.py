@@ -22,7 +22,7 @@ def run_loop():
 
 
 app = IBapi()
-app.connect('127.0.0.1', 7497, 14)
+app.connect('127.0.0.1', 7497, 15)
 
 # Start the socket in a thread
 api_thread = threading.Thread(target=run_loop, daemon=True)
@@ -46,13 +46,13 @@ while counter < 3:
     time.sleep(5)  # sleep to allow enough time for data to be returned
 
 
-# # Working with Pandas DataFrames
-# import pandas
-#
-# df = pandas.DataFrame(app.data, columns=['DateTime', 'Close'])
-# df['DateTime'] = pandas.to_datetime(df['DateTime'], unit='s')
-# df.to_csv('EURUSD_Hourly.csv')
-#
-# print(df)
-#
+# Working with Pandas DataFrames
+import pandas
+
+df = pandas.DataFrame(app.data, columns=['DateTime', 'Close'])
+df['DateTime'] = pandas.to_datetime(df['DateTime'], unit='s')
+df.to_csv('EURUSD_Hourly.csv')
+
+print(df)
+
 app.disconnect()
