@@ -94,9 +94,10 @@ class TestApp(EWrapper, EClient):
         self.globalCancelOnly = False
         self.simplePlaceOid = None
         self._my_errors = {}
-
-
-
+        # pandas lines # https://stackoverflow.com/questions/58524845/is-there-a-proper-way-to-produce-a-ohlcv-pandas-dataframe-using-ib-api
+        # https://stackoverflow.com/questions/62416071/storing-api-data-into-a-dataframe
+        self.cols = ['date', 'open', 'high', 'low', 'close', 'volume']
+        self.df = pd.DataFrame(columns=self.cols)
 
     # def dumpReqAnsErrSituation(self):
     #     logging.debug("%s\t%s\t%s\t%s" % ("ReqId", "#Req", "#Ans", "#Err"))
@@ -230,21 +231,22 @@ class TestApp(EWrapper, EClient):
         # ! [reqtickbytickwithhist]
 
     @printWhenExecuting
-    def historicalDataOperations_req(self, num_days = "20 D"):
+    def historicalDataOperations_req(self, num_days = '20 D'):
         self.num_days = num_days
-        # Requesting historical data
-        # ! [reqHeadTimeStamp]
-        # self.reqHeadTimeStamp(4101, ContractSamples.USStockAtSmart(), "TRADES", 0, 1)
-        # ! [reqHeadTimeStamp]
+        days_list = ['30 D', '50 D']
+        for i in days_list:
+            self.num_days = i
+        # for days in days_list:
+        #     self.num_days = f'{days} + D'
 
         # ! [reqhistoricaldata]
         # this is where it ends
-        queryTime = (datetime.datetime.today() - datetime.timedelta(days=6)).strftime("%Y%m%d %H:%M:%S")
+            queryTime = (datetime.datetime.today() - datetime.timedelta(days=7)).strftime("%Y%m%d %H:%M:%S")
         # self.reqHistoricalData(4102, ContractSamples.SimpleFuture(), queryTime,
         #                        "1 M", "1 day", "MIDPOINT", 1, 1, False, [])
         # this is number of days back
-        self.reqHistoricalData(4103, ContractSamples.SimpleFuture(), queryTime,
-                               self.num_days, "1 day", "TRADES", 1, 1, False, [])
+            self.reqHistoricalData(4103, ContractSamples.SimpleFuture(), queryTime,
+                                   self.num_days, "1 day", "TRADES", 1, 1, False, [])
 
         # self.reqHistoricalData(4104, ContractSamples.SimpleFuture(), "",
         #                        "1 M", "1 day", "MIDPOINT", 1, 1, True, [])
@@ -252,7 +254,13 @@ class TestApp(EWrapper, EClient):
 
 
     def historicalData(self, reqId: int, bar: BarData):
-        print("HistoricalData. ReqId:", reqId, "BarData.", bar)
+        # print("HistoricalData. ReqId:", reqId, "BarData.", bar)
+
+        # print(bar.date, bar.open, bar.high, bar.low, bar.close, bar.volume)
+        self.df.loc[len(self.df)] = [bar.date, bar.open, bar.high, bar.low, bar.close, bar.volume]
+        self.df.to_csv('history1.csv')
+        print(self.df)
+
 
     # ! [historicaldata]
 
@@ -271,25 +279,25 @@ class TestApp(EWrapper, EClient):
         # self.cancelHistoricalData(4104)
         # ! [cancelhistoricaldata]
 
-    @iswrapper
-    # ! [historicaldataend]
-    def historicalDataEnd(self, reqId: int, start: str, end: str):
-        super().historicalDataEnd(reqId, start, end)
-        print("HistoricalDataEnd. ReqId:", reqId, "from", start, "to", end)
-
-    # ! [historicaldataend]
-
-    @iswrapper
-    # ! [historicalDataUpdate]
-    def historicalDataUpdate(self, reqId: int, bar: BarData):
-        print("HistoricalDataUpdate. ReqId:", reqId, "BarData.", bar)
-
-    # ! [historicalDataUpdate]
-
-    def historicalData(self, reqId:int, bar: BarData):
-        print("HistoricalData. ReqId:", reqId, "BarData.", bar)
-        logging.debug("ReqId:", reqId, "BarData.", bar)
-        # self.disconnect()
+    # @iswrapper
+    # # ! [historicaldataend]
+    # def historicalDataEnd(self, reqId: int, start: str, end: str):
+    #     super().historicalDataEnd(reqId, start, end)
+    #     print("HistoricalDataEnd. ReqId:", reqId, "from", start, "to", end)
+    #
+    # # ! [historicaldataend]
+    #
+    # @iswrapper
+    # # ! [historicalDataUpdate]
+    # def historicalDataUpdate(self, reqId: int, bar: BarData):
+    #     print("HistoricalDataUpdate. ReqId:", reqId, "BarData.", bar)
+    #
+    # # ! [historicalDataUpdate]
+    #
+    # def historicalData(self, reqId:int, bar: BarData):
+    #     print("HistoricalData. ReqId:", reqId, "BarData.", bar)
+    #     logging.debug("ReqId:", reqId, "BarData.", bar)
+    #     # self.disconnect()
 
 
     @iswrapper
@@ -361,6 +369,7 @@ def main():
 
         # ! [clientrun]
         app.run()
+
         # ! [clientrun]
     except:
         raise
