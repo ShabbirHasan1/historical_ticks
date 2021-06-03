@@ -3,7 +3,7 @@ import pandas
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
-
+import datetime
 import threading
 import time
 
@@ -43,11 +43,14 @@ eurusd_contract.lastTradeDateOrContractMonth = "202106"
 # Request historical candles
 counter = 0
 while counter < 3:
-    app.reqHistoricalData(1, eurusd_contract, '', '1 D', '1 hour', 'TRADES', 0, 2, False, [])
+    app.reqHistoricalData(1, eurusd_contract, '20210525 06:20:57', '1 D', '1 hour', 'TRADES', 0, 2, False, [])
     time.sleep(2)
     df = pandas.DataFrame(app.data, columns=['DateTime', 'Close'])
-
-    print(df['Close'].values[2])
+    df['DateTime'] = df['DateTime'].astype(int)
+    time.sleep(2)
+    pick_time = df['DateTime'].values[2]
+    print(datetime.datetime.fromtimestamp(pick_time).strftime("%Y%m%d %H:%M:%S"))
+    # print(df['DateTime'].values[2])
     counter = counter + 1
     time.sleep(5)  # sleep to allow enough time for data to be returned
 
