@@ -15,6 +15,8 @@ from ibapi.wrapper import EWrapper
 from ibapi.common import *  # @UnusedWildImport
 
 class TestApp(EWrapper, EClient):
+
+
     def __init__(self):
         EWrapper.__init__(self)
         EClient.__init__(self, wrapper=self)
@@ -27,6 +29,8 @@ class TestApp(EWrapper, EClient):
         self.simplePlaceOid = None
         self._my_errors = {}
         self.data = []  # Initialize variable to store candle
+        self.combo_list = []
+        self.query_time = '20210527 09:39:33'
 
     @iswrapper
     # ! [connectack]
@@ -100,37 +104,36 @@ class TestApp(EWrapper, EClient):
     def historicalTicksOperations(self):
         # ! [reqhistoricalticks]
 
-        self.reqHistoricalTicks(18001, ContractSamples.SimpleFuture(),
-                                '20210527 09:39:33', "", 1000, "TRADES", 1, True, [])
+            self.reqHistoricalTicks(18001, ContractSamples.SimpleFuture(),
+                                    self.query_time, "", 1000, "TRADES", 1, True, [])
 
     @iswrapper
     # ! [historicaltickslast]
     def historicalTicksLast(self, reqId: int, ticks: ListOfHistoricalTickLast,
                             done: bool):
-        for tick in ticks:
-            # print("HistoricalTickLast. ReqId:", reqId, tick)
-            self.data.append([reqId, tick])
-        time.sleep(5)
+
+        counter = 0
+        while counter < 4:
+            for tick in ticks:
+                # print("HistoricalTickLast. ReqId:", reqId, tick)
+                self.data.append([reqId, tick])
+            counter += 1
+
+        print(self.data)
         df = pd.DataFrame(self.data)
         print(df)
-        df.to_csv('history.csv')
+        df.to_csv('tick_list.csv')
         self.disconnect()
-
     # ! [historicaltickslast]
 
 def main():
 
     app = TestApp()
     try:
-
-        # ! [connect]
         app.connect("127.0.0.1", port=7497, clientId=102)
-        # ! [connect]
-        print("serverVersion:%s connectionTime:%s" % (app.serverVersion(),
-                                                      app.twsConnectionTime()))
-        # ! [clientrun]
         app.run()
-        # ! [clientrun]
+
+
     except:
         raise
 
