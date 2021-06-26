@@ -312,16 +312,7 @@ class TestApp(EWrapper, EClient):
               "Price:", price, "Size:", size, "Exch:", exchange,
               "Spec Cond:", specialConditions, "PastLimit:", tickAttribLast.pastLimit, "Unreported:",
               tickAttribLast.unreported)
-        self.persistData(reqId, time, price,
-                         size, tickAttribLast)
 
-    def persistData(self, reqId: int, time: int, price: float,
-                          size: int, tickAttribLast: TickAttribLast):
-        #print(" inside persistData")
-        contract = ContractSamples.SimpleFuture()
-        values = (1,contract.symbol, reqId, time, price, size)
-        db = DBHelper()
-        db.insertData(values)
 
 
 def main():
@@ -350,7 +341,7 @@ def main():
         if args.global_cancel:
             app.globalCancelOnly = True
         # ! [connect]
-        app.connect("127.0.0.1", args.port, clientId=2)
+        app.connect("127.0.0.1", args.port, clientId=3)
         # ! [connect]
         print("serverVersion:%s connectionTime:%s" % (app.serverVersion(),
                                                       app.twsConnectionTime()))
