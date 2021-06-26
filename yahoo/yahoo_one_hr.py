@@ -3,8 +3,8 @@ import pandas as pd
 
 ticker = "NQ=F"
 #data = yf.download(tickers = ticker, start='2010-01-04', end='2018-12-31')
-# data = yf.download(tickers = ticker, period = "2y", interval = '60m')
-data = yf.download(tickers = ticker, start='2017-01-04', end='2018-12-31', interval = '60m')
+data = yf.download(tickers = ticker, period = "2mo", interval = '5m')
+# data = yf.download(tickers = ticker, start='2017-01-04', end='2018-12-31', interval = '5m')
 
 # valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
 # valid intervals: 1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo

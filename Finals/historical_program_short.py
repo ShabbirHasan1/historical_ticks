@@ -2,7 +2,7 @@ import logging
 
 import pandas as pd
 import datetime
-
+import time
 from ibapi.contract import Contract
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
@@ -10,7 +10,11 @@ from ibapi.utils import iswrapper
 
 # types
 from ibapi.common import *  # @UnusedWildImport
+from ibapi.order import Order
+from ibapi.order_state import OrderState
 
+from finta import TA
+from collections import deque
 
 futures_contract = Contract()
 futures_contract.symbol = 'NQ'
@@ -32,8 +36,6 @@ class TestApp(EWrapper, EClient):
         self.globalCancelOnly = False
         self.simplePlaceOid = None
         self._my_errors = {}
-        self.cols = ['date', 'open', 'high', 'low', 'close', 'volume']
-        self.df = pd.DataFrame(columns=self.cols)
 
     @iswrapper
     # ! [connectack]
@@ -83,14 +85,11 @@ class TestApp(EWrapper, EClient):
     def historicalDataOperations_req(self):
         queryTime = (datetime.datetime.today() - datetime.timedelta(days=1)).strftime("%Y%m%d %H:%M:%S")
         self.reqHistoricalData(4102, futures_contract, queryTime,
-                               "10 D", "5 mins", "TRADES", 1, 1, False, [])
+                               "30 D", "5 mins", "TRADES", 1, 1, False, [])
 
     # ! [historicaldata]
     def historicalData(self, reqId:int, bar: BarData):
-        # print("HistoricalData. ReqId:", reqId, "BarData.", bar)
-        self.df.loc[len(self.df)] = [bar.date, bar.open, bar.high, bar.low, bar.close, bar.volume]
-        self.df.to_csv('history2.csv')
-        # print(self.df)
+        print("HistoricalData. ReqId:", reqId, "BarData.", bar)
         self.disconnect()
     # ! [historicaldata]
 
