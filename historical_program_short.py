@@ -83,7 +83,7 @@ class TestApp(EWrapper, EClient):
     def historicalDataOperations_req(self):
         queryTime = (datetime.datetime.today() - datetime.timedelta(days=1)).strftime("%Y%m%d %H:%M:%S")
         self.reqHistoricalData(4102, futures_contract, queryTime,
-                               "10 D", "5 mins", "TRADES", 1, 1, False, [])
+                               "2000 S", "5 secs", "TRADES", 1, 1, False, [])
 
     # ! [historicaldata]
     def historicalData(self, reqId:int, bar: BarData):
