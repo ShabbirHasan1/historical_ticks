@@ -15,9 +15,6 @@ from ibapi.wrapper import EWrapper
 from ibapi.common import *  # @UnusedWildImport
 from ibapi.contract import * # @UnusedWildImport
 
-# https://stackoverflow.com/questions/41510945/interactive-brokers-obtain-historical-data-of-opt-midpoint-and-trades
-# https://groups.io/g/twsapi/topic/data_for_expired_contracts_no/4042776?p=
-
 class TestApp(EWrapper, EClient):
     def __init__(self):
         EWrapper.__init__(self)
@@ -31,10 +28,7 @@ class TestApp(EWrapper, EClient):
         self.simplePlaceOid = None
         self._my_errors = {}
         self.data = []  # Initialize variable to store candle
-        self.contract = Contract()
-        self.i = 0
         self.df = pd.DataFrame()
-        self.strike_list = []
 
     @iswrapper
     # ! [connectack]
@@ -68,8 +62,7 @@ class TestApp(EWrapper, EClient):
             self.reqGlobalCancel()
         else:
             print("Executing requests")
-            # self.tickDataOperations_req()
-            self.historicalDataOperations_req()
+            self.accountOperations_req()
             print("Executing requests ... finished")
 
     def keyboardInterrupt(self):
@@ -82,7 +75,7 @@ class TestApp(EWrapper, EClient):
 
     def stop(self):
         print("Executing cancels")
-        self.tickByTickOperations_cancel()
+
 
         print("Executing cancels ... finished")
 
@@ -103,33 +96,23 @@ class TestApp(EWrapper, EClient):
     def winError(self, text: str, lastError: int):
         super().winError(text, lastError)
 
+    def accountOperations_req(self):
+        # Requesting accounts' summary
+        # ! [reqaaccountsummary]
+        self.reqAccountSummary(9002, "All", "$LEDGER")
+        # ! [reqaaccountsummary]
 
-    def historicalDataOperations_req(self):
-
-        chain = [128, 129, 130]
-        for self.i in chain:
-            self.contract.symbol = "TQQQ"
-            self.contract.secType = "OPT"
-            self.contract.exchange = "SMART"
-            self.contract.currency = "USD"
-            self.contract.lastTradeDateOrContractMonth = "20210723"
-            self.contract.strike = self.i
-            self.contract.right = "C"
-            self.contract.multiplier = "100"
-            self.reqHistoricalData(4103, self.contract, '', "2 D", "1 hour", "MIDPOINT", 1, 1, False, [])
-
-            # https://interactivebrokers.github.io/tws-api/historical_bars.html
-
-    def historicalData(self, reqId: int, bar: BarData):
-        self.data.append([bar])
-
-        # print("HistoricalData. ReqId:", reqId, "BarData.", bar)
-        self.df = pd.DataFrame(self.data)
-
+    # ! [accountsummary]
+    def accountSummary(self, reqId: int, account: str, tag: str, value: str,
+                       currency: str):
+        super().accountSummary(reqId, account, tag, value, currency)
+        print("AccountSummary. ReqId:", reqId, "Account:", account,
+              "Tag: ", tag, "Value:", value, "Currency:", currency)
+        self.data.append([tag, value])
+        self.df = pd.DataFrame(self.data, columns=['Account', 'Value'])
         print(self.df)
-        self.df.to_csv('history.csv')
+        self.df.to_csv('acct_value.csv')
         self.disconnect()
-
 
 def main():
 
@@ -148,8 +131,6 @@ def main():
         # ! [clientrun]
     except:
         raise
-
-
 
 if __name__ == "__main__":
     main()

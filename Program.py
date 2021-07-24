@@ -251,7 +251,7 @@ class TestApp(TestWrapper, TestClient):
             print("Executing requests")
             #self.reqGlobalCancel()
             #self.marketDataTypeOperations()
-            #self.accountOperations_req()
+            self.accountOperations_req()
             #self.tickDataOperations_req()
             #self.marketDepthOperations_req()
             #self.realTimeBarsOperations_req()
