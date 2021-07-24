@@ -112,6 +112,11 @@ class TestApp(EWrapper, EClient):
         self.df = pd.DataFrame(self.data, columns=['Account', 'Value'])
         print(self.df)
         self.df.to_csv('acct_value.csv')
+        if len(self.df) == 24:
+            net_liquid = self.df.loc[8,'Value']
+            five_pct_rule = .05 * float(net_liquid)
+            print(f'net liquidation value: {net_liquid}')
+            print(f'5% allocation:  {five_pct_rule}')
         self.disconnect()
 
 def main():
