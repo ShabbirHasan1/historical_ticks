@@ -149,22 +149,10 @@ class TestApp(EWrapper, EClient):
 
     # ! [historicaltickslast]
 
-def main():
-
-    app = TestApp()
-    try:
-
-        # ! [connect]
-        app.connect("127.0.0.1", port=7497, clientId=102)
-        # ! [connect]
-        print("serverVersion:%s connectionTime:%s" % (app.serverVersion(),
-                                                      app.twsConnectionTime()))
-        # ! [clientrun]
-        app.run()
-        # ! [clientrun]
-    except:
-        raise
+app = TestApp()
+app.connect("127.0.0.1", port=7497, clientId=102)
+print("serverVersion:%s connectionTime:%s" % (app.serverVersion(),
+                                                  app.twsConnectionTime()))
+app.run()
 
 
-if __name__ == "__main__":
-    main()

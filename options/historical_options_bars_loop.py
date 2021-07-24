@@ -118,7 +118,7 @@ class TestApp(EWrapper, EClient):
             self.contract.secType = "OPT"
             self.contract.exchange = "SMART"
             self.contract.currency = "USD"
-            self.contract.lastTradeDateOrContractMonth = "20210723"
+            self.contract.lastTradeDateOrContractMonth = "20210730"
             self.contract.strike = self.i
             self.contract.right = "C"
             self.contract.multiplier = "100"
@@ -133,6 +133,8 @@ class TestApp(EWrapper, EClient):
         self.df = pd.DataFrame(self.data)
         print(self.df)
         self.df.to_csv('history.csv')
+        if len(self.df) == 78:
+            self.disconnect()
 
 def main():
 

@@ -112,7 +112,7 @@ class TestApp(EWrapper, EClient):
             self.contract.secType = "OPT"
             self.contract.exchange = "SMART"
             self.contract.currency = "USD"
-            self.contract.lastTradeDateOrContractMonth = "20210723"
+            self.contract.lastTradeDateOrContractMonth = "20210730"
             self.contract.strike = self.i
             self.contract.right = "C"
             self.contract.multiplier = "100"
@@ -137,7 +137,7 @@ def main():
     try:
 
         # ! [connect]
-        app.connect("127.0.0.1", port=7497, clientId=102)
+        app.connect("127.0.0.1", port=7497, clientId=51)
         # ! [connect]
         print("serverVersion:%s connectionTime:%s" % (app.serverVersion(),
                                                       app.twsConnectionTime()))

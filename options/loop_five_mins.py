@@ -32,6 +32,9 @@ class TestApp(EWrapper, EClient):
         self._my_errors = {}
         self.data = []  # Initialize variable to store candle
         self.contract = Contract()
+        self.i = 0
+        self.df = pd.DataFrame()
+        self.strike_list = []
 
     @iswrapper
     # ! [connectack]
@@ -67,7 +70,6 @@ class TestApp(EWrapper, EClient):
             print("Executing requests")
             # self.tickDataOperations_req()
             self.historicalDataOperations_req()
-
             print("Executing requests ... finished")
 
     def keyboardInterrupt(self):
@@ -101,53 +103,32 @@ class TestApp(EWrapper, EClient):
     def winError(self, text: str, lastError: int):
         super().winError(text, lastError)
 
-#    @printWhenExecuting
-#     def historicalTicksOperations(self):
-#         # ! [reqhistoricalticks]
-#
-#         self.reqHistoricalTicks(18001, ContractSamples.USOptionContract(),
-#                                 '20210722 09:39:33', "", 50, "TRADES", 1, True, [])
-#
 
     def historicalDataOperations_req(self):
-        self.contract.symbol = "TQQQ"
-        self.contract.secType = "OPT"
-        self.contract.exchange = "SMART"
-        self.contract.currency = "USD"
-        self.contract.lastTradeDateOrContractMonth = "20210730"
-        self.contract.strike = 128
-        self.contract.right = "C"
-        self.contract.multiplier = "100"
+            self.contract.symbol = "TQQQ"
+            self.contract.secType = "OPT"
+            self.contract.exchange = "SMART"
+            self.contract.currency = "USD"
+            self.contract.lastTradeDateOrContractMonth = "20210730"
+            self.contract.strike = 133
+            self.contract.right = "C"
+            self.contract.multiplier = "100"
+            self.reqHistoricalData(4103, self.contract, '', "2 D", "1 hour", "MIDPOINT", 1, 1, False, [])
 
-        self.reqHistoricalData(4103, self.contract, '',
-                               "2 D", "1 hour", "MIDPOINT", 1, 1, False, [])
-
-        # https://interactivebrokers.github.io/tws-api/historical_bars.html
+            # https://interactivebrokers.github.io/tws-api/historical_bars.html
 
     def historicalData(self, reqId: int, bar: BarData):
-        self.data.append([reqId, bar])
-        #print("HistoricalData. ReqId:", reqId, "BarData.", bar)
 
-        df = pd.DataFrame(self.data)
-        print(df)
-        df.to_csv('history.csv')
-        self.disconnect()
+        self.data.append([bar])
+
+        # print("HistoricalData. ReqId:", reqId, "BarData.", bar)
+        self.df = pd.DataFrame(self.data)
+
+        print(self.df)
+        self.df.to_csv('five_loop.csv')
 
 
-    # @iswrapper
-    # # ! [historicaltickslast]
-    # def historicalTicksLast(self, reqId: int, ticks: ListOfHistoricalTickLast,
-    #                         done: bool):
-    #     for tick in ticks:
-    #         # print("HistoricalTickLast. ReqId:", reqId, tick)
-    #         self.data.append([reqId, tick])
-    #     time.sleep(5)
-    #     df = pd.DataFrame(self.data)
-    #     print(df)
-    #     df.to_csv('history.csv')
-    #     self.disconnect()
 
-    # ! [historicaltickslast]
 
 def main():
 
@@ -161,9 +142,12 @@ def main():
                                                       app.twsConnectionTime()))
         # ! [clientrun]
         app.run()
+
+
         # ! [clientrun]
     except:
         raise
+
 
 
 if __name__ == "__main__":
