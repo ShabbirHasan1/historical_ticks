@@ -1645,6 +1645,7 @@ class TestApp(TestWrapper, TestClient):
         self.reqIds(-1)
         # ! [reqids]
 
+
         # Requesting all open orders
         # ! [reqallopenorders]
         self.reqAllOpenOrders()
