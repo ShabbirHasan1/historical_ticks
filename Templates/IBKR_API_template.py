@@ -40,7 +40,8 @@ class TestApp(EWrapper, EClient):
         #print("HistoricalData. ReqId:", reqId, "BarData.", bar)
 
         df = pd.DataFrame(self.data)
-        print(df)
+        if len(df) == 14: # start analysis after the loop is complete
+            print(df)
         df.to_csv('history.csv')
         self.disconnect()
 
