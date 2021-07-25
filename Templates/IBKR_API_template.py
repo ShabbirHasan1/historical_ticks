@@ -1,5 +1,3 @@
-import logging
-import time
 import pandas as pd
 from ibapi.utils import iswrapper
 from ibapi.client import EClient
@@ -7,9 +5,6 @@ from ibapi.wrapper import EWrapper
 # types
 from ibapi.common import *  # @UnusedWildImport
 from ibapi.contract import * # @UnusedWildImport
-
-# https://stackoverflow.com/questions/41510945/interactive-brokers-obtain-historical-data-of-opt-midpoint-and-trades
-# https://groups.io/g/twsapi/topic/data_for_expired_contracts_no/4042776?p=
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -39,7 +34,6 @@ class TestApp(EWrapper, EClient):
         self.reqHistoricalData(4103, self.contract, '',
                                "2 D", "1 hour", "MIDPOINT", 1, 1, False, [])
 
-        # https://interactivebrokers.github.io/tws-api/historical_bars.html
 
     def historicalData(self, reqId: int, bar: BarData):
         self.data.append([reqId, bar])
