@@ -45,7 +45,8 @@ class TestApp(EWrapper, EClient):
         self.permId2ord[order.permId] = order
         self.data.append([order.permId, contract.symbol, contract.secType, contract.exchange, order.action,
                           order.orderType,order.totalQuantity, order.lmtPrice, orderState.status])
-        self.df = pd.DataFrame(self.data)
+        self.df = pd.DataFrame(self.data, columns=['Account', 'Ticker', 'SecType', 'Exchange', 'Order', 'Type', 'Qty',
+                                                   'Price', 'Status'])
         if len(self.df) == 2:
             print(self.df)
         self.df.to_csv('open_orders.csv')
@@ -56,21 +57,7 @@ class TestApp(EWrapper, EClient):
     def openOrderEnd(self):
         super().openOrderEnd()
         print("OpenOrderEnd")
-
-    # ! [orderstatus]
-    def orderStatus(self, orderId: OrderId, status: str, filled: float,
-                    remaining: float, avgFillPrice: float, permId: int,
-                    parentId: int, lastFillPrice: float, clientId: int,
-                    whyHeld: str, mktCapPrice: float):
-        super().orderStatus(orderId, status, filled, remaining,
-                            avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice)
-        print("OrderStatus. Id:", orderId, "Status:", status, "Filled:", filled,
-              "Remaining:", remaining, "AvgFillPrice:", avgFillPrice,
-              "PermId:", permId, "ParentId:", parentId, "LastFillPrice:",
-              lastFillPrice, "ClientId:", clientId, "WhyHeld:",
-              whyHeld, "MktCapPrice:", mktCapPrice)
         self.disconnect()
-    # ! [orderstatus]
 
 def main():
     app = TestApp()
