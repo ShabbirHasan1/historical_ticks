@@ -43,12 +43,12 @@ class TestApp(EWrapper, EClient):
 
         order.contract = contract
         self.permId2ord[order.permId] = order
-        self.data.append([order.permId, contract.symbol, contract.secType, contract.exchange, order.action, order.orderType,
-                          order.totalQuantity, order.lmtPrice, orderState.status])
-        df = pd.DataFrame(self.data)
-        if len(df) == 2:
-            print(df)
-        df.to_csv('open_orders.csv')
+        self.data.append([order.permId, contract.symbol, contract.secType, contract.exchange, order.action,
+                          order.orderType,order.totalQuantity, order.lmtPrice, orderState.status])
+        self.df = pd.DataFrame(self.data)
+        if len(self.df) == 2:
+            print(self.df)
+        self.df.to_csv('open_orders.csv')
 
         # ! [openorder]
 
