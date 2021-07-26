@@ -1,14 +1,5 @@
 import logging
-
-import time
-
-
 import pandas as pd
-
-from ibapi.utils import iswrapper
-
-from ContractSamples import ContractSamples
-
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 # types
@@ -21,6 +12,7 @@ class TestApp(EWrapper, EClient):
     def __init__(self):
         EWrapper.__init__(self)
         EClient.__init__(self, wrapper=self)
+        self.permId2ord = {}
         self.data = []  # Initialize variable to store candle
         self.df = pd.DataFrame()
 
