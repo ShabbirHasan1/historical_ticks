@@ -13,6 +13,7 @@ class TestApp(EWrapper, EClient):
         EWrapper.__init__(self)
         EClient.__init__(self, wrapper=self)
         self.permId2ord = {}
+        self.contract = Contract()
         self.data = []  # Initialize variable to store candle
         self.df = pd.DataFrame()
 
@@ -34,14 +35,21 @@ class TestApp(EWrapper, EClient):
     def openOrder(self, orderId: OrderId, contract: Contract, order: Order,
                   orderState: OrderState):
         super().openOrder(orderId, contract, order, orderState)
-        print("OpenOrder. PermId: ", order.permId, "ClientId:", order.clientId, " OrderId:", orderId,
-              "Account:", order.account, "Symbol:", contract.symbol, "SecType:", contract.secType,
-              "Exchange:", contract.exchange, "Action:", order.action, "OrderType:", order.orderType,
-              "TotalQty:", order.totalQuantity, "CashQty:", order.cashQty,
-              "LmtPrice:", order.lmtPrice, "AuxPrice:", order.auxPrice, "Status:", orderState.status)
+        # print("OpenOrder. PermId: ", order.permId, "ClientId:", order.clientId, " OrderId:", orderId,
+        #       "Account:", order.account, "Symbol:", contract.symbol, "SecType:", contract.secType,
+        #       "Exchange:", contract.exchange, "Action:", order.action, "OrderType:", order.orderType,
+        #       "TotalQty:", order.totalQuantity, "CashQty:", order.cashQty,
+        #       "LmtPrice:", order.lmtPrice, "AuxPrice:", order.auxPrice, "Status:", orderState.status)
 
         order.contract = contract
         self.permId2ord[order.permId] = order
+        self.data.append([order.permId, contract.symbol, contract.secType, contract.exchange, order.action,
+                          order.orderType,order.totalQuantity, order.lmtPrice, orderState.status])
+        self.df = pd.DataFrame(self.data)
+        if len(self.df) == 2:
+            print(self.df)
+        self.df.to_csv('open_orders.csv')
+
         # ! [openorder]
 
     # ! [openorderend]

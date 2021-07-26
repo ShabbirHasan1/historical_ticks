@@ -11,9 +11,6 @@ class TestApp(EWrapper, EClient):
     def __init__(self):
         EWrapper.__init__(self)
         EClient.__init__(self, wrapper=self)
-        # ! [socket_init]
-        self.globalCancelOnly = False
-        self.simplePlaceOid = None
         self.data = []  # Initialize variable to store candle
         self.df = pd.DataFrame()
 
