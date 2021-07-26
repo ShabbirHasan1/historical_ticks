@@ -35,6 +35,7 @@ class IBApi(EWrapper, EClient):
         EClient.__init__(self, wrapper=self)
         self.data = []  # Initialize variable to store candle
         self.df = pd.DataFrame()
+        self.one_pct_rule = 0
 
     # Historical Backtest Data
     def historicalData(self, reqId, bar):
@@ -68,17 +69,17 @@ class IBApi(EWrapper, EClient):
     def accountSummary(self, reqId: int, account: str, tag: str, value: str,
                        currency: str):
         super().accountSummary(reqId, account, tag, value, currency)
-        print("AccountSummary. ReqId:", reqId, "Account:", account,
-              "Tag: ", tag, "Value:", value, "Currency:", currency)
-        self.data.append([tag, value])
+        # print("AccountSummary. ReqId:", reqId, "Account:", account,
+        #       "Tag: ", tag, "Value:", value, "Currency:", currency)
+        # self.data.append([tag, value])
         self.df = pd.DataFrame(self.data, columns=['Account', 'Value'])
-        print(self.df)
+        # print(self.df)
         # self.df.to_csv('acct_value.csv')
         if len(self.df) == 24:
             net_liquid = self.df.loc[8, 'Value']
-            one_pct_rule = .01 * float(net_liquid)
-            print(f'net liquidation value: {net_liquid}')
-            print(f'1% allocation:  {one_pct_rule}')
+            self.one_pct_rule = .01 * float(net_liquid)
+            # print(f'net liquidation value: {net_liquid}')
+            # print(f'1% allocation:  {one_pct_rule}')
 
     def error(self, id, errorCode, errorMsg):
         print(errorCode)
@@ -107,6 +108,7 @@ class Bot:
         self.long_ema = collections.deque(maxlen=SLOW_PERIOD)
         self.short_ema = collections.deque(maxlen=FAST_PERIOD)
         self.nmc = 0
+        self.ib_api = IBApi()
 
         # Create our IB Contract Object
         contract = Contract()
@@ -122,7 +124,6 @@ class Bot:
         # print(self.pos)
         # Listen to socket in seperate thread
 
-        self.ib.accountSummary(self, account, tag, value, currency)
 
     def run_loop(self):
         self.ib.run()
@@ -244,7 +245,7 @@ class Bot:
                     # Bracket Order 4% Profit Target 1% Stop Loss
                     profitTarget_ = round(((price * .96) * 4) / 4)
                     stopLoss_ = round((bar.close * 1.02) * 4) / 4
-                    quantity_ = np.floor(one_pct_rule / bar.close)
+                    quantity_ = np.floor(self.ib_api.one_pct_rule / bar.close)
                     bracket_s = self.bracketOrder(orderId, action="SELL",
                                                   quantity=quantity_,
                                                   profitTarget=profitTarget_,
