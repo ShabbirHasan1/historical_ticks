@@ -108,7 +108,6 @@ class Bot:
         self.long_ema = collections.deque(maxlen=SLOW_PERIOD)
         self.short_ema = collections.deque(maxlen=FAST_PERIOD)
         self.nmc = 0
-        self.ib_api = IBApi()
 
         # Create our IB Contract Object
         contract = Contract()
@@ -245,7 +244,7 @@ class Bot:
                     # Bracket Order 4% Profit Target 1% Stop Loss
                     profitTarget_ = round(((price * .96) * 4) / 4)
                     stopLoss_ = round((bar.close * 1.02) * 4) / 4
-                    quantity_ = np.floor(self.ib_api.one_pct_rule / bar.close)
+                    quantity_ = np.floor(self.ib.one_pct_rule / bar.close)
                     bracket_s = self.bracketOrder(orderId, action="SELL",
                                                   quantity=quantity_,
                                                   profitTarget=profitTarget_,
