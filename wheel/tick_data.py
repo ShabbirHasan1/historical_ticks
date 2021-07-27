@@ -1,5 +1,3 @@
-import logging
-import pandas as pd
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 # types
@@ -7,19 +5,13 @@ from ibapi.common import *  # @UnusedWildImport
 from ibapi.contract import * # @UnusedWildImport
 import datetime
 
-eurusd_contract = Contract()
-
 class TestApp(EWrapper, EClient):
     def __init__(self):
         EWrapper.__init__(self)
         EClient.__init__(self, wrapper=self)
-        self.permId2ord = {}
         self.contract = Contract()
-        self.data = []  # Initialize variable to store candle
-        self.df = pd.DataFrame()
 
     def nextValidId(self, orderId: int):
-
         # we can start now
         self.start()
 
@@ -29,15 +21,16 @@ class TestApp(EWrapper, EClient):
 
     def tickDataOperations_req(self):
         # Create contract object
+        self.contract.symbol = 'NQ'
+        self.contract.secType = 'FUT'
+        self.contract.exchange = 'GLOBEX'
+        self.contract.currency = 'USD'
+        self.contract.lastTradeDateOrContractMonth = "202109"
 
-        eurusd_contract.symbol = 'NQ'
-        eurusd_contract.secType = 'FUT'
-        eurusd_contract.exchange = 'GLOBEX'
-        eurusd_contract.currency = 'USD'
-        eurusd_contract.lastTradeDateOrContractMonth = "202109"
+        # Request tick data
+        self.reqTickByTickData(19002, self.contract, "AllLast", 0, False)
 
-        self.reqTickByTickData(19002, eurusd_contract, "AllLast", 0, False)
-
+    # Receive tick data
     def tickByTickAllLast(self, reqId: int, tickType: int, time: int, price: float,
                           size: int, tickAttribLast: TickAttribLast, exchange: str,
                           specialConditions: str):
