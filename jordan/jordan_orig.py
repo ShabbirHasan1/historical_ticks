@@ -216,7 +216,7 @@ class Bot:
                     # Bracket Order 4% Profit Target 1% Stop Loss
                     profitTarget_ = round(((bar.close * 1.04) * 4) / 4)
                     stopLoss_ = round(((bar.close * .99) * 4) / 4)
-                    quantity_ = np.floor(one_pct_rule / bar.close)
+                    quantity_ = np.floor(self.ib.one_pct_rule / bar.close)
                     bracket = self.bracketOrder(orderId,
                                                 action="BUY", quantity=quantity_,
                                                 profitTarget=profitTarget_,
