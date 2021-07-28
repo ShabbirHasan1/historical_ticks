@@ -8,6 +8,9 @@ from ibapi.contract import * # @UnusedWildImport
 from ibapi.order import Order
 import datetime
 
+MOVING_AVG_PERIOD_LENGTH = 13
+TICKS_PER_CANDLE = 133
+
 class TestApp(EWrapper, EClient):
     def __init__(self):
         EWrapper.__init__(self)
@@ -25,6 +28,9 @@ class TestApp(EWrapper, EClient):
         self.safety_num_shares = 0
         self.shares_to_buy = 0
         self.num_contracts = 0
+        self.mov_avg_length = MOVING_AVG_PERIOD_LENGTH
+        self.ticks_per_candle = TICKS_PER_CANDLE
+        self.tick_count = 0
 
     def nextValidId(self, orderId: int):
         super().nextValidId(orderId)
@@ -64,7 +70,7 @@ class TestApp(EWrapper, EClient):
             self.cash_value = self.df1.loc[2, 'Value']
 
     def running_list(self):
-        if len(self.data) > 5:
+        if len(self.data) > self.mov_avg_length:
             self.data.pop(0)
 
     def calc_contracts(self):
@@ -109,16 +115,20 @@ class TestApp(EWrapper, EClient):
     def tickByTickAllLast(self, reqId: int, tickType: int, time: int, price: float,
                           size: int, tickAttribLast: TickAttribLast, exchange: str,
                           specialConditions: str):
-        print('Time:', datetime.datetime.fromtimestamp(time),
+        print('Candle:', str(self.tick_count // self.ticks_per_candle+1).zfill(3),
+              'Tick:', str(self.tick_count % self.ticks_per_candle + 1).zfill(3),
+              'Time:', datetime.datetime.fromtimestamp(time),
               "Price:", "{:.2f}".format(price),
-              'Size:', size, self.recent_price,
-              self.cash_value,
-              self.num_shares,
-              self.shares_to_buy,
-              self.num_contracts)
+              'Size:', size,
+              'Avg. Px:', "{:.2f}".format(self.recent_price),
+              'Cash:',self.cash_value,
+              'Full Shares:',"{:.2f}".format(self.num_shares),
+              'Shares Qty:',self.shares_to_buy,
+              'Contract Qty:',self.num_contracts)
         self.data.append(price)
         self.running_list()
         self.calc_contracts()
+        self.tick_count += 1
 
 def main():
     app = TestApp()
