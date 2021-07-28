@@ -75,14 +75,8 @@ class TestApp(EWrapper, EClient):
               self.shares_to_buy,
               self.num_contracts)
         self.data.append(price)
-        self.running_list()
-        self.calc_contracts()
-
-    def running_list(self):
         if len(self.data) > 5:
             self.data.pop(0)
-
-    def calc_contracts(self):
         if len(self.data) > 0:
             self.recent_price = sum(self.data) / len(self.data)
             self.num_shares = float(self.cash_value) / (self.recent_price / 100) # get rid of / 100

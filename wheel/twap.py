@@ -7,7 +7,6 @@ from ibapi.order import Order
 from datetime import datetime
 import pause
 
-
 class TestApp(EWrapper, EClient):
     def __init__(self):
         EWrapper.__init__(self)
@@ -77,9 +76,6 @@ class TestApp(EWrapper, EClient):
             self.sendOrder('BUY')
             print(f'BUY at {trade_time}')
             time_counter += 1
-
-
-
 
 def main():
     app = TestApp()

@@ -5,12 +5,15 @@ from ibapi.wrapper import EWrapper
 # types
 from ibapi.common import *  # @UnusedWildImport
 from ibapi.contract import * # @UnusedWildImport
+from ibapi.order import Order
 import datetime
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
         EWrapper.__init__(self)
         EClient.__init__(self, wrapper=self)
+        self.nextValidOrderId = None
+        self.permId2ord = {}
         self.contract = Contract()
         self.data = []
         self.df = pd.DataFrame()
@@ -24,11 +27,19 @@ class TestApp(EWrapper, EClient):
         self.num_contracts = 0
 
     def nextValidId(self, orderId: int):
+        super().nextValidId(orderId)
+        self.nextValidOrderId = orderId
+        print("NextValidId:", orderId)
+
         # we can start now
         self.start()
 
-    def start(self):
+    def nextOrderId(self):
+        oid = self.nextValidOrderId
+        self.nextValidOrderId += 1
+        return oid
 
+    def start(self):
         self.tickDataOperations_req()
         self.accountOperations_req()
         print("Executing requests ... finished")
@@ -51,6 +62,37 @@ class TestApp(EWrapper, EClient):
             # print(self.df1)
             self.df1.to_csv('acct_value.csv')
             self.cash_value = self.df1.loc[2, 'Value']
+
+    def running_list(self):
+        if len(self.data) > 5:
+            self.data.pop(0)
+
+    def calc_contracts(self):
+        # self.running_list()
+        if len(self.data) > 0:
+            self.recent_price = sum(self.data) / len(self.data)
+            self.num_shares = float(self.cash_value) / (self.recent_price / 100) # get rid of / 100
+            self.safety_num_shares = 0.75 * self.num_shares
+            self.shares_to_buy = math.floor(self.safety_num_shares / 100) * 100
+            self.num_contracts = self.shares_to_buy / 100
+
+    def sendOrder(self, action):
+        # Create contract object
+        self.contract.symbol = 'NQ'
+        self.contract.secType = 'FUT'
+        self.contract.exchange = 'GLOBEX'
+        self.contract.currency = 'USD'
+        self.contract.lastTradeDateOrContractMonth = "202109"
+
+        order = Order()
+        order.action = action
+        order.totalQuantity = 1
+        order.orderType = "MKT"
+        self.placeOrder(self.nextOrderId(), self.contract, order)
+
+    def check_and_send_order(self):
+        if self.recent_price < 15000:
+            self.sendOrder('BUY')
 
     def tickDataOperations_req(self):
         # Create contract object
@@ -77,18 +119,6 @@ class TestApp(EWrapper, EClient):
         self.data.append(price)
         self.running_list()
         self.calc_contracts()
-
-    def running_list(self):
-        if len(self.data) > 5:
-            self.data.pop(0)
-
-    def calc_contracts(self):
-        if len(self.data) > 0:
-            self.recent_price = sum(self.data) / len(self.data)
-            self.num_shares = float(self.cash_value) / (self.recent_price / 100) # get rid of / 100
-            self.safety_num_shares = 0.75 * self.num_shares
-            self.shares_to_buy = math.floor(self.safety_num_shares / 100) * 100
-            self.num_contracts = self.shares_to_buy / 100
 
 def main():
     app = TestApp()
