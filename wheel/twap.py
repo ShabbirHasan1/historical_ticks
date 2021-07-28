@@ -1,15 +1,12 @@
-import time
 import pandas as pd
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 # types
-from ibapi.common import *  # @UnusedWildImport
 from ibapi.contract import * # @UnusedWildImport
 from ibapi.order import Order
-from ibapi.order_state import OrderState
 from datetime import datetime
 import pause
-from datetime import timedelta
+
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
