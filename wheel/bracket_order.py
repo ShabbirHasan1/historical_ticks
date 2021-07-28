@@ -31,6 +31,7 @@ class TestApp(EWrapper, EClient):
         self.mov_avg_length = MOVING_AVG_PERIOD_LENGTH
         self.ticks_per_candle = TICKS_PER_CANDLE
         self.tick_count = 0
+        self.num_shares_live = 0
 
     def nextValidId(self, orderId: int):
         super().nextValidId(orderId)
@@ -69,16 +70,19 @@ class TestApp(EWrapper, EClient):
             self.df1.to_csv('acct_value.csv')
             self.cash_value = self.df1.loc[2, 'Value']
 
-    def running_list(self):
+    def running_list(self, price: float):
+        self.data.append(price)
         if len(self.data) > self.mov_avg_length:
             self.data.pop(0)
 
-    def calc_contracts(self):
+    def sma(self):
+        sma = sum(self.data) / len(self.data)
+
+    def calc_contracts(self, price: float):
         # self.running_list()
         if len(self.data) > 0:
-            self.recent_price = sum(self.data) / len(self.data)
-            self.num_shares = float(self.cash_value) / (self.recent_price / 100) # get rid of / 100
-            self.safety_num_shares = 0.75 * self.num_shares
+            self.num_shares_live = float(self.cash_value) / (price / 100) # get rid of 100 for stock
+            self.safety_num_shares = 0.75 * self.num_shares_live
             self.shares_to_buy = math.floor(self.safety_num_shares / 100) * 100
             self.num_contracts = self.shares_to_buy / 100
 
@@ -120,14 +124,12 @@ class TestApp(EWrapper, EClient):
               'Time:', datetime.datetime.fromtimestamp(time),
               "Price:", "{:.2f}".format(price),
               'Size:', size,
-              'Avg. Px:', "{:.2f}".format(self.recent_price),
               'Cash:',self.cash_value,
-              'Full Shares:',"{:.2f}".format(self.num_shares),
-              'Shares Qty:',self.shares_to_buy,
-              'Contract Qty:',self.num_contracts)
-        self.data.append(price)
-        self.running_list()
-        self.calc_contracts()
+              'Full Shares:',"{:.2f}".format(self.num_shares_live),
+              'Partial Shares:',self.shares_to_buy,
+              'Contracts:',self.num_contracts)
+        self.running_list(price)
+        self.calc_contracts(price)
         self.tick_count += 1
 
 def main():
