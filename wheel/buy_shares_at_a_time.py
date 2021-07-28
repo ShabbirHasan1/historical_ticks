@@ -78,9 +78,9 @@ class TestApp(EWrapper, EClient):
     #     end_time = datetime.strptime(end_of_road, '%Y-%m-%d %H:%M:%S')
 
     def check_and_send_order(self):
-        pause.until(datetime(2021,7,27,21,19,11))
+        pause.until(datetime(2021,7,28,4,51,0))
         self.sendOrder('BUY')
-        pause.until(datetime(2021, 7, 27, 21, 19, 45))
+        pause.until(datetime(2021, 7, 28, 4, 51, 15))
         self.sendOrder('SELL')
 
 def main():
