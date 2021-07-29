@@ -94,10 +94,12 @@ class TestApp(EWrapper, EClient):
         sma = sum(self.data) / len(self.data)
 
     def calc_contracts(self, price: float):
-        self.num_shares_live = float(self.cash_value) / (price)
-        self.safety_num_shares = 0.75 * self.num_shares_live
-        self.shares_to_buy = math.floor(self.safety_num_shares / 100) * 100
-        self.num_contracts = self.shares_to_buy / 100
+        # self.running_list()
+        if len(self.data) > 0:
+            self.num_shares_live = float(self.cash_value) / (price / 100) # get rid of 100 for stock
+            self.safety_num_shares = 0.75 * self.num_shares_live
+            self.shares_to_buy = math.floor(self.safety_num_shares / 100) * 100
+            self.num_contracts = self.shares_to_buy / 100
 
     def sendOrder(self, action):
         # Create contract object
@@ -118,17 +120,11 @@ class TestApp(EWrapper, EClient):
 
     def tickDataOperations_req(self):
         # Create contract object
-
-        # self.contract.symbol = 'NQ'
-        # self.contract.secType = 'FUT'
-        # self.contract.exchange = 'GLOBEX'
-        # self.contract.currency = 'USD'
-        # self.contract.lastTradeDateOrContractMonth = "202109"
-
-        self.contract.symbol = 'QQQ'
-        self.contract.secType = 'STK'
-        self.contract.exchange = 'SMART'
+        self.contract.symbol = 'NQ'
+        self.contract.secType = 'FUT'
+        self.contract.exchange = 'GLOBEX'
         self.contract.currency = 'USD'
+        self.contract.lastTradeDateOrContractMonth = "202109"
 
         # Request tick data
         self.reqTickByTickData(19002, self.contract, "AllLast", 0, False)
@@ -148,10 +144,10 @@ class TestApp(EWrapper, EClient):
               'Contracts:',self.num_contracts,
               'WMA:', "{:.2f}".format(self.wma),
               'Data', self.data)
-        self.calc_contracts(price)
         if self.tick_count % self.ticks_per_candle == self.ticks_per_candle - 1:
             self.running_list(price)
             self.calc_wma()
+            self.calc_contracts(price)
         self.tick_count += 1
 
 def main():
