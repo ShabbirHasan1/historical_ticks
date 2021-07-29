@@ -7,9 +7,10 @@ from ibapi.common import *  # @UnusedWildImport
 from ibapi.contract import * # @UnusedWildImport
 from ibapi.order import Order
 import datetime
+from finta import TA
 
-MOVING_AVG_PERIOD_LENGTH = 13
-TICKS_PER_CANDLE = 133
+MOVING_AVG_PERIOD_LENGTH = 3
+TICKS_PER_CANDLE = 4
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -19,6 +20,7 @@ class TestApp(EWrapper, EClient):
         self.permId2ord = {}
         self.contract = Contract()
         self.data = []
+        self.data_counter = 0
         self.df = pd.DataFrame()
         self.data1 = []
         self.df1 = pd.DataFrame()
@@ -32,6 +34,8 @@ class TestApp(EWrapper, EClient):
         self.ticks_per_candle = TICKS_PER_CANDLE
         self.tick_count = 0
         self.num_shares_live = 0
+        self.wma = 0
+
 
     def nextValidId(self, orderId: int):
         super().nextValidId(orderId)
@@ -71,9 +75,22 @@ class TestApp(EWrapper, EClient):
             self.cash_value = self.df1.loc[2, 'Value']
 
     def running_list(self, price: float):
-        self.data.append(price)
-        if len(self.data) > self.mov_avg_length:
-            self.data.pop(0)
+        if self.tick_count % self.ticks_per_candle == self.ticks_per_candle - 1:
+            self.data.append(price)
+            self.data_counter += 1
+            if self.data_counter < self.mov_avg_length:
+                return
+            while len(self.data) > self.mov_avg_length:
+                self.data.pop(0)
+            self.calc_wma()
+
+    def calc_wma(self):
+        df_wma = pd.DataFrame(self.data, columns=['close'])
+        df_wma['open'] = df_wma['close']
+        df_wma['high'] = df_wma['close']
+        df_wma['low'] = df_wma['close']
+        df_wma['sma'] = TA.SMA(df_wma, self.mov_avg_length)
+        self.wma = df_wma['sma'].iloc[-1]
 
     def sma(self):
         sma = sum(self.data) / len(self.data)
@@ -127,7 +144,9 @@ class TestApp(EWrapper, EClient):
               'Cash:',self.cash_value,
               'Full Shares:',"{:.2f}".format(self.num_shares_live),
               'Partial Shares:',self.shares_to_buy,
-              'Contracts:',self.num_contracts)
+              'Contracts:',self.num_contracts,
+              'WMA:', "{:.2f}".format(self.wma),
+              'Data', self.data)
         self.running_list(price)
         self.calc_contracts(price)
         self.tick_count += 1
