@@ -100,13 +100,6 @@ class TestApp(EWrapper, EClient):
         self.num_contracts = self.shares_to_buy / 100
 
     def sendOrder(self, action):
-        # Create contract object
-        self.contract.symbol = 'NQ'
-        self.contract.secType = 'FUT'
-        self.contract.exchange = 'GLOBEX'
-        self.contract.currency = 'USD'
-        self.contract.lastTradeDateOrContractMonth = "202109"
-
         order = Order()
         order.action = action
         order.totalQuantity = 1
@@ -114,21 +107,24 @@ class TestApp(EWrapper, EClient):
         self.placeOrder(self.nextOrderId(), self.contract, order)
 
     def check_and_send_order(self):
+        # put order logic here
         self.sendOrder('BUY')
 
     def tickDataOperations_req(self):
         # Create contract object
 
-        # self.contract.symbol = 'NQ'
-        # self.contract.secType = 'FUT'
-        # self.contract.exchange = 'GLOBEX'
-        # self.contract.currency = 'USD'
-        # self.contract.lastTradeDateOrContractMonth = "202109"
-
-        self.contract.symbol = 'QQQ'
-        self.contract.secType = 'STK'
-        self.contract.exchange = 'SMART'
+        # futures contract
+        self.contract.symbol = 'NQ'
+        self.contract.secType = 'FUT'
+        self.contract.exchange = 'GLOBEX'
         self.contract.currency = 'USD'
+        self.contract.lastTradeDateOrContractMonth = "202109"
+
+        # stock contract
+        # self.contract.symbol = 'QQQ'
+        # self.contract.secType = 'STK'
+        # self.contract.exchange = 'SMART'
+        # self.contract.currency = 'USD'
 
         # Request tick data
         self.reqTickByTickData(19002, self.contract, "AllLast", 0, False)
