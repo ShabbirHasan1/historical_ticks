@@ -171,7 +171,7 @@ class TestApp(EWrapper, EClient):
 
     def create_order(self):
         if self.signal == self.prev_signal:
-            print('Stay in position')
+            print(f'Stay in {self.signal} position')
             return
         elif self.signal == 'LONG':
             self.send_order('BUY')
