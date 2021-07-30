@@ -4,6 +4,8 @@ from ibapi.wrapper import EWrapper
 # types
 from ibapi.common import *  # @UnusedWildImport
 from ibapi.contract import * # @UnusedWildImport
+from ibapi.order import Order
+from ibapi.order_state import OrderState
 import datetime
 from finta import TA
 
@@ -155,6 +157,26 @@ class TestApp(EWrapper, EClient):
                 self.signal = 'SHORT'
             else:
                 self.signal = self.prev_signal
+
+    def create_order(self):
+        if self.signal == self.prev_signal:
+            print('Stay in position')
+            return
+        elif self.signal == 'LONG':
+            self.send_order('BUY')
+        elif self.signal == 'SHORT':
+            self.send_order('SELL')
+        else:
+            print('Waiting for next order...')
+
+    def send_order(self, action):
+        order = Order()
+        order.action = action
+        order.totalQuantity = 1
+        order.orderType = 'MKT'
+        self.pending_order = True
+        self.placeOrder(self.nextOrderId(), self.contract, order)
+
 
     # run tick data
     def tickDataOperations_req(self):
