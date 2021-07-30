@@ -9,6 +9,8 @@ from finta import TA
 
 MOVING_AVG_PERIOD_LENGTH = 3
 MOVING_AVG_PERIOD_LENGTH_1 = 5
+MOVING_AVG_PERIOD_LENGTH_A = 3
+MOVING_AVG_PERIOD_LENGTH_A1 = 5
 TICKS_PER_CANDLE = 4
 TICKS_PER_CANDLE_A = 6
 
@@ -19,15 +21,23 @@ class TestApp(EWrapper, EClient):
         self.contract = Contract()
         self.data = []
         self.data1 = []
+        self.data_a = []
+        self.data_a1 = []
         self.data_counter = 0
         self.data_counter1 = 0
+        self.data_counter_a = 0
+        self.data_counter_a1 = 0
         self.mov_avg_length = MOVING_AVG_PERIOD_LENGTH
         self.mov_avg_length1 = MOVING_AVG_PERIOD_LENGTH_1
+        self.mov_avg_length_a = MOVING_AVG_PERIOD_LENGTH_A
+        self.mov_avg_length_a1 = MOVING_AVG_PERIOD_LENGTH_A1
         self.ticks_per_candle = TICKS_PER_CANDLE
         self.ticks_per_candle_a = TICKS_PER_CANDLE_A
         self.tick_count = 0
         self.indicator = 0
         self.indicator1 = 0
+        self.indicator_a = 0
+        self.indicator_a1 = 0
 
     def nextValidId(self, orderId: int):
         # we can start now
@@ -54,6 +64,22 @@ class TestApp(EWrapper, EClient):
         while len(self.data1) > self.mov_avg_length1:
             self.data1.pop(0)
 
+    def running_list_a(self, price: float):
+        self.data_a.append(price)
+        self.data_counter_a += 1
+        if self.data_counter_a < self.mov_avg_length_a:
+            return
+        while len(self.data_a) > self.mov_avg_length_a:
+            self.data_a.pop(0)
+
+    def running_list_a1(self, price: float):
+        self.data_a1.append(price)
+        self.data_counter_a1 += 1
+        if self.data_counter_a1 < self.mov_avg_length_a1:
+            return
+        while len(self.data_a1) > self.mov_avg_length_a1:
+            self.data_a1.pop(0)
+
     def calc_indicator(self):
         df_indicator = pd.DataFrame(self.data, columns=['close'])
         df_indicator['open'] = df_indicator['close']
@@ -69,6 +95,22 @@ class TestApp(EWrapper, EClient):
         df_indicator1['low'] = df_indicator1['close']
         df_indicator1['indicator1'] = TA.SMA(df_indicator1, self.mov_avg_length1) # choose indicator here
         self.indicator1 = df_indicator1['indicator1'].iloc[-1]
+
+    def calc_indicator_a(self):
+        df_indicator_a = pd.DataFrame(self.data_a, columns=['close'])
+        df_indicator_a['open'] = df_indicator_a['close']
+        df_indicator_a['high'] = df_indicator_a['close']
+        df_indicator_a['low'] = df_indicator_a['close']
+        df_indicator_a['indicator_a'] = TA.SMA(df_indicator_a, self.mov_avg_length_a) # choose indicator here
+        self.indicator_a = df_indicator_a['indicator_a'].iloc[-1]
+
+    def calc_indicator_a1(self):
+        df_indicator_a1 = pd.DataFrame(self.data_a1, columns=['close'])
+        df_indicator_a1['open'] = df_indicator_a1['close']
+        df_indicator_a1['high'] = df_indicator_a1['close']
+        df_indicator_a1['low'] = df_indicator_a1['close']
+        df_indicator_a1['indicator_a1'] = TA.SMA(df_indicator_a1, self.mov_avg_length_a) # choose indicator here
+        self.indicator_a1 = df_indicator_a1['indicator_a1'].iloc[-1]
 
     def tickDataOperations_req(self):
         # Create contract object
@@ -95,13 +137,20 @@ class TestApp(EWrapper, EClient):
               "Price:", "{:.2f}".format(price),
               'Size:', size,
               'Indicator:', "{:.2f}".format(self.indicator),
-              'Indicator1:', "{:.2f}".format(self.indicator1))
+              'Indicator1:', "{:.2f}".format(self.indicator1),
+              'Indicator_a:', "{:.2f}".format(self.indicator_a),
+              'Indicator_a1:', "{:.2f}".format(self.indicator_a1))
               # 'Data', self.data)
         if self.tick_count % self.ticks_per_candle == self.ticks_per_candle - 1:
             self.running_list(price)
             self.running_list1(price)
             self.calc_indicator()
             self.calc_indicator1()
+        if self.tick_count % self.ticks_per_candle_a == self.ticks_per_candle_a - 1:
+            self.running_list_a(price)
+            self.running_list_a1(price)
+            self.calc_indicator_a()
+            self.calc_indicator_a1()
         self.tick_count += 1
 
 def main():
