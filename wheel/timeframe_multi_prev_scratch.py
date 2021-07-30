@@ -46,6 +46,8 @@ class TestApp(EWrapper, EClient):
         self.p = 0
         self.q = 0
         self.r = 0
+        self.signal = 'NONE'
+        self.prev_signal = 'NONE'
 
     def nextValidId(self, orderId: int):
         # we can start now
@@ -144,6 +146,17 @@ class TestApp(EWrapper, EClient):
             return
         self.prev_indicator_a1 = self.indicator_a1
 
+    def decision_engine(self):
+        if self.prev_indicator != 0:
+            self.prev_signal = self.signal
+            if self.prev_indicator < self.indicator and self.indicator > self.prev_indicator:
+                self.signal = 'LONG'
+            elif self.prev_indicator > self.indicator and self.indicator < self.prev_indicator:
+                self.signal = 'SHORT'
+            else:
+                self.signal = self.prev_signal
+
+    # run tick data
     def tickDataOperations_req(self):
         # Create contract object
 
@@ -176,6 +189,7 @@ class TestApp(EWrapper, EClient):
               'Prev_Ind_a:', "{:.2f}".format(self.prev_indicator_a),
               'Ind_a1:', "{:.2f}".format(self.indicator_a1),
               'Prev_Ind_a1:', "{:.2f}".format(self.prev_indicator_a1),
+              self.signal
         )
               # 'Data', self.data)
         if self.tick_count % self.ticks_per_candle == self.ticks_per_candle - 1:
@@ -185,6 +199,7 @@ class TestApp(EWrapper, EClient):
             self.calc_indicator()
             self.calc_prev_indicator1()
             self.calc_indicator1()
+            self.decision_engine()
         if self.tick_count % self.ticks_per_candle_a == self.ticks_per_candle_a - 1:
             self.running_list_a(price)
             self.running_list_a1(price)
