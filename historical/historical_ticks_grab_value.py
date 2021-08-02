@@ -77,7 +77,7 @@ class TestApp(EWrapper, EClient):
             self.df['time_converted'] = pd.to_datetime(self.df['time'], unit = 's') # convert to datetime
             self.df['time_converted'] = self.df['time_converted'] - timedelta(hours=4) # convert to EST
 
-        self.first_time = self.df['time_converted'].iloc[len(self.df)-1000]
+        self.first_time = self.df['time_converted'].iloc[0]
 
         self.first_time = self.first_time.strftime("%Y%m%d %H:%M:%S")
 
