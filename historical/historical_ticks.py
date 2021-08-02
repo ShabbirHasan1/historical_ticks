@@ -6,7 +6,7 @@ from ibapi.wrapper import EWrapper
 from ibapi.common import *  # @UnusedWildImport
 from ibapi.contract import * # @UnusedWildImport
 from time import sleep
-import datetime
+from datetime import datetime, timedelta
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -32,9 +32,10 @@ class TestApp(EWrapper, EClient):
         self.contract.exchange = 'GLOBEX'
         self.contract.currency = 'USD'
         self.contract.lastTradeDateOrContractMonth = "202109"
-
+        now = datetime.now()
+        current_time = now.strftime("%Y%m%d %H:%M:%S")
         self.reqHistoricalTicks(18001, self.contract,
-                                "20210731 09:39:33", "", 1000, "TRADES", 1, True, [])
+                                " ", current_time, 1000, "TRADES", 1, True, [])
 
         # 20210731 09:39:33
 
@@ -51,6 +52,7 @@ class TestApp(EWrapper, EClient):
             self.df.columns = ['time', 'price']             # name the columns
             self.df = self.df.replace(',','', regex=True)   # get rid of the commas
             self.df['time'] = pd.to_datetime(self.df['time'], unit = 's') # convert to datetime
+            self.df['time'] = self.df['time'] - timedelta(hours=4) # convert to EST
         print(self.df)
         self.df.to_csv('tick_history_subset.csv')
         self.disconnect()
