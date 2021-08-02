@@ -16,10 +16,26 @@ class TestApp(EWrapper, EClient):
         self.contract = Contract()
         self.cols = ['data', 'open', 'high', 'low', 'close', 'volume']
         self.df = pd.DataFrame(columns=self.cols)
+        self.now = datetime.now()
+        self.current_time = self.now.strftime("%Y%m%d %H:%M:%S")
+        self.nextValidOrderId = None
+        self.first_time = 0
 
     def nextValidId(self, orderId: int):
+        super().nextValidId(orderId)
+
+
+        self.nextValidOrderId = orderId
+        print("NextValidId:", orderId)
+        # ! [nextvalidid]
+
         # we can start now
         self.start()
+
+    def nextOrderId(self):
+        oid = self.nextValidOrderId
+        self.nextValidOrderId += 1
+        return oid
 
     def start(self):
 
@@ -32,10 +48,17 @@ class TestApp(EWrapper, EClient):
         self.contract.exchange = 'GLOBEX'
         self.contract.currency = 'USD'
         self.contract.lastTradeDateOrContractMonth = "202109"
-        now = datetime.now()
-        current_time = now.strftime("%Y%m%d %H:%M:%S")
-        self.reqHistoricalTicks(18001, self.contract,
+        with open("sample_date.txt",
+                  "r") as file1:
+            passwd = file1.read()
+        current_time = str(passwd)
+        # current_time = passwd.strftime("%Y%m%d %H:%M:%S")
+        self.reqHistoricalTicks(18002, self.contract,
                                 " ", current_time, 1000, "TRADES", 1, True, [])
+            # self.current_time = '20210731 09:39:33'
+
+
+
 
         # 20210731 09:39:33
 
@@ -51,8 +74,17 @@ class TestApp(EWrapper, EClient):
             self.df = self.df[[1,8]]                        # select the time and price columns
             self.df.columns = ['time', 'price']             # name the columns
             self.df = self.df.replace(',','', regex=True)   # get rid of the commas
-            self.df['time'] = pd.to_datetime(self.df['time'], unit = 's') # convert to datetime
-            self.df['time'] = self.df['time'] - timedelta(hours=4) # convert to EST
+            self.df['time_converted'] = pd.to_datetime(self.df['time'], unit = 's') # convert to datetime
+            self.df['time_converted'] = self.df['time_converted'] - timedelta(hours=4) # convert to EST
+
+        self.first_time = self.df['time_converted'].iloc[len(self.df)-1000]
+
+        self.first_time = self.first_time.strftime("%Y%m%d %H:%M:%S")
+
+        print(self.first_time)
+        with open("sample_date.txt", "w") as text_file:
+            text_file.write(self.first_time)
+
         print(self.df)
         self.df.to_csv('tick_history_subset.csv')
         self.disconnect()
@@ -76,13 +108,13 @@ class TestApp(EWrapper, EClient):
 
 
 def main():
-    # counter = 0
-    # while counter < 4:
-    app = TestApp()
-    app.connect('127.0.0.1', 7497, 121)
-    app.run()
-        # sleep(3)
-        # counter = counter + 1
+    counter = 0
+    while counter < 4:
+        app = TestApp()
+        app.connect('127.0.0.1', 7497, 121)
+        app.run()
+        sleep(3)
+        counter = counter + 1
 
     # app = TestApp()
     # app.connect("127.0.0.1", port=7497, clientId=105)
