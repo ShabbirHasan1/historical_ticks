@@ -14,6 +14,7 @@ print(df1)
 
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/merging.html
 frames = [df, df1]
-result = pd.concat(frames)
+result = pd.concat(frames, ignore_index=True)
+# result = df.append(df1)
 print(result)
 
