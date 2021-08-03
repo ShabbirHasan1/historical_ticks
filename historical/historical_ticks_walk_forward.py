@@ -8,6 +8,8 @@ from ibapi.contract import * # @UnusedWildImport
 from time import sleep
 from datetime import datetime, timedelta
 
+START_DATE_FILENAME = 'start_date.txt'
+
 class TestApp(EWrapper, EClient):
     def __init__(self):
         EWrapper.__init__(self)
@@ -50,13 +52,13 @@ class TestApp(EWrapper, EClient):
         self.contract.exchange = 'GLOBEX'
         self.contract.currency = 'USD'
         self.contract.lastTradeDateOrContractMonth = "202109"
-        with open("sample_date.txt",
+        with open(START_DATE_FILENAME,
                   "r") as file1:
             passwd = file1.read()
         current_time = str(passwd)
         # current_time = passwd.strftime("%Y%m%d %H:%M:%S")
         self.reqHistoricalTicks(18002, self.contract,
-                                " ", current_time, 1000, "TRADES", 1, True, []) # 1 is RTH and 0 is all hours
+                                current_time, " ", 1000, "TRADES", 1, True, []) # 1 is RTH and 0 is all hours
             # self.current_time = '20210731 09:39:33'
 
 
@@ -69,7 +71,7 @@ class TestApp(EWrapper, EClient):
         for tick in ticks:
             # print("HistoricalTickLast. ReqId:", reqId, tick)
             self.data.append([tick])
-        #print(self.data)
+            #print(self.data)
             self.df = pd.DataFrame(self.data)               # convert list to a df
             self.df[0] = self.df.astype(str)                # convert df to a string
             self.df = self.df[0].str.split(expand=True)     # split the column by delimiters
@@ -79,12 +81,12 @@ class TestApp(EWrapper, EClient):
             self.df['time_converted'] = pd.to_datetime(self.df['time'], unit = 's') # convert to datetime
             self.df['time_converted'] = self.df['time_converted'] - timedelta(hours=4) # convert to EST
 
-        self.first_time = self.df['time_converted'].iloc[0]
+        self.first_time = self.df['time_converted'].iloc[-1] # 0 for first value and -1 for last value
 
         self.first_time = self.first_time.strftime("%Y%m%d %H:%M:%S")
 
         print(self.first_time)
-        with open("sample_date.txt", "w") as text_file:
+        with open(START_DATE_FILENAME, "w") as text_file:
             text_file.write(self.first_time)
 
         print(self.df)
