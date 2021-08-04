@@ -85,24 +85,28 @@ class TestApp(EWrapper, EClient):
 
         print(self.df)
 
-        df1 = pd.read_csv('tick_history_subset.csv', index_col=0) # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
+        df1 = pd.read_csv('tick_history_080321.csv', index_col=0) # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
         print(df1)
         frames = [df1, self.df]
         result = pd.concat(frames, ignore_index=True)
         print(result)
-        result.to_csv('tick_history_subset.csv')  # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
+        result.to_csv('tick_history_080321.csv')  # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
 
         self.disconnect()
 
 def main():
-    counter = 0
-    while counter < 5:
+    app = TestApp()
+    counter = 57
+    while counter < 67:
         print(f'Attempt:{counter}')
-        app = TestApp()
-        app.connect('127.0.0.1', 7497, 121)
-        app.run()
-        sleep(3)
-        counter = counter + 1
+        if counter % 59 == 0:
+            sleep(60)
+            counter = counter + 1
+        else:
+            app.connect('127.0.0.1', 7497, 121)
+            app.run()
+            sleep(3)
+            counter = counter + 1
 
 if __name__ == "__main__":
     main()

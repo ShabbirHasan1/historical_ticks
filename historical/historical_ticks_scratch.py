@@ -9,6 +9,7 @@ from time import sleep
 from datetime import datetime, timedelta
 
 START_DATE_FILENAME = 'start_date.txt'
+RECORDING_FILENAME = 'tick_history_subset1.csv'
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -25,8 +26,6 @@ class TestApp(EWrapper, EClient):
 
     def nextValidId(self, orderId: int):
         super().nextValidId(orderId)
-
-
         self.nextValidOrderId = orderId
         print("NextValidId:", orderId)
         # ! [nextvalidid]
@@ -59,11 +58,7 @@ class TestApp(EWrapper, EClient):
         # current_time = passwd.strftime("%Y%m%d %H:%M:%S")
         self.reqHistoricalTicks(18002, self.contract,
                                 current_time, " ", 1000, "TRADES", 1, True, []) # 1 is RTH and 0 is all hours
-            # self.current_time = '20210731 09:39:33'
-
-
-
-
+        # self.current_time = '20210731 09:39:33'
         # 20210731 09:39:33
 
     def historicalTicksLast(self, reqId: int, ticks: ListOfHistoricalTickLast,
@@ -81,8 +76,6 @@ class TestApp(EWrapper, EClient):
             self.df['time_converted'] = pd.to_datetime(self.df['time'], unit = 's') # convert to datetime
             self.df['time_converted'] = self.df['time_converted'] - timedelta(hours=4) # convert to EST
 
-        print(self.df)
-
         self.first_time = self.df['time_converted'].iloc[-1] # 0 for first value and -1 for last value
 
         self.first_time = self.first_time.strftime("%Y%m%d %H:%M:%S")
@@ -91,47 +84,26 @@ class TestApp(EWrapper, EClient):
         with open(START_DATE_FILENAME, "w") as text_file:
             text_file.write(self.first_time)
 
-        # concat the 2 dataframes
-        df1 = pd.read_csv('tick_history_subset.csv', index_col=0)
-        frames = [self.df, df1]
-        result = pd.concat(frames)
+        print(self.df)
+
+        df1 = pd.read_csv(RECORDING_FILENAME, index_col=0) # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
+        print(df1)
+        frames = [df1, self.df]
+        result = pd.concat(frames, ignore_index=True)
         print(result)
-        result.to_csv('tick_history_subset.csv') # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
-        # print(self.df)
-        # self.df.to_csv('tick_history_subset.csv')
+        result.to_csv(RECORDING_FILENAME)  # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
+
         self.disconnect()
-
-
-    # def historicalData(self, reqId: int, bar: BarData):
-    #     #self.data.append([reqId, bar])
-    #     self.df.loc[len(self.df)] = [bar.date, bar.open, bar.high, bar.low, bar.close, bar.volume]
-    #     self.displ_hist()
-    #     #print("HistoricalData. ReqId:", reqId, "BarData.", bar)
-    #     #print(self.df)
-    #     #self.df.to_csv('history1.csv')
-    #
-    # def displ_hist(self):
-    #     # num_rows = len(self.df)
-    #     if len(self.df) == 19:
-    #         print(self.df)
-    #         sleep(2)
-    #         self.df.to_csv('history2.csv')
-    #     self.disconnect()  # this is what allows the loop to keep going
-
 
 def main():
     counter = 0
-    while counter < 3:
+    while counter < 5:
+        print(f'Attempt:{counter}')
         app = TestApp()
         app.connect('127.0.0.1', 7497, 121)
         app.run()
-        sleep(3)
+        sleep(1)
         counter = counter + 1
-
-    # app = TestApp()
-    # app.connect("127.0.0.1", port=7497, clientId=105)
-    # print("serverVersion:%s connectionTime:%s" % (app.serverVersion(), app.twsConnectionTime()))
-    # app.run()
 
 if __name__ == "__main__":
     main()

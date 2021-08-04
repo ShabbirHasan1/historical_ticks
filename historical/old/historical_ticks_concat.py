@@ -96,8 +96,7 @@ class TestApp(EWrapper, EClient):
 
 def main():
     counter = 0
-    while counter < 5:
-        print(f'Attempt:{counter}')
+    while counter < 55:
         app = TestApp()
         app.connect('127.0.0.1', 7497, 121)
         app.run()
