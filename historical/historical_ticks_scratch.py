@@ -8,6 +8,7 @@ from ibapi.contract import * # @UnusedWildImport
 from time import sleep
 from datetime import datetime, timedelta
 
+NUMBER_OF_ATTEMPTS = 62
 START_DATE_FILENAME = 'start_date.txt'
 RECORDING_FILENAME = 'tick_history_subset1.csv'
 
@@ -96,14 +97,18 @@ class TestApp(EWrapper, EClient):
         self.disconnect()
 
 def main():
-    counter = 0
-    while counter < 5:
-        print(f'Attempt:{counter}')
-        app = TestApp()
-        app.connect('127.0.0.1', 7497, 121)
-        app.run()
-        sleep(1)
-        counter = counter + 1
+    counter = 56
+    while counter < NUMBER_OF_ATTEMPTS:
+        if counter % 59 != 0:
+            print(f'Attempt:{counter}')
+            app = TestApp()
+            app.connect('127.0.0.1', 7497, 120)
+            app.run()
+            sleep(1)
+            counter = counter + 1
+        else:
+            sleep(30)
+            counter = counter + 1
 
 if __name__ == "__main__":
     main()
