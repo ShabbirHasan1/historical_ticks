@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 NUMBER_OF_ATTEMPTS = 100
 START_DATE_FILENAME = 'start_date.txt'
-RECORDING_FILENAME = 'tick_history_subset3.csv'
+RECORDING_FILENAME = 'tick_history_subset1.csv'
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -21,7 +21,6 @@ class TestApp(EWrapper, EClient):
         self.now = datetime.now()
         self.current_time = self.now.strftime("%Y%m%d %H:%M:%S")
         self.first_time = 0
-        self.switch = 0
 
     def nextValidId(self, orderId: int):
 
@@ -41,21 +40,13 @@ class TestApp(EWrapper, EClient):
         self.contract.exchange = 'GLOBEX'
         self.contract.currency = 'USD'
         self.contract.lastTradeDateOrContractMonth = "202109"
-
-        if self.switch == 0:
-            passwd = self.current_time
-
-        else:
-            with open(START_DATE_FILENAME,
-                      "r") as file1:
-                passwd = file1.read()
+        with open(START_DATE_FILENAME,
+                  "r") as file1:
+            passwd = file1.read()
         current_time = str(passwd)
-
-        # current_time = self.current_time
-        self.reqHistoricalTicks(18002, self.contract,
-                                " ", current_time, 1000, "TRADES", 0, True, []) # 1 is RTH and 0 is all hours
-        self.switch += 1
         # current_time = passwd.strftime("%Y%m%d %H:%M:%S")
+        self.reqHistoricalTicks(18002, self.contract,
+                                current_time, " ", 1000, "TRADES", 0, True, []) # 1 is RTH and 0 is all hours
         # self.current_time = '20210731 09:39:33'
         # 20210731 09:39:33
 
@@ -74,7 +65,7 @@ class TestApp(EWrapper, EClient):
             self.df['time_converted'] = pd.to_datetime(self.df['time'], unit = 's') # convert to datetime
             self.df['time_converted'] = self.df['time_converted'] - timedelta(hours=4) # convert to EST
 
-        self.first_time = self.df['time_converted'].iloc[0] # 0 for first value and -1 for last value
+        self.first_time = self.df['time_converted'].iloc[-1] # 0 for first value and -1 for last value
 
         self.first_time = self.first_time.strftime("%Y%m%d %H:%M:%S")
 
@@ -86,7 +77,7 @@ class TestApp(EWrapper, EClient):
 
         df1 = pd.read_csv(RECORDING_FILENAME, index_col=0) # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
         print(df1)
-        frames = [self.df, df1]
+        frames = [df1, self.df]
         result = pd.concat(frames, ignore_index=True)
         print(result)
         result.to_csv(RECORDING_FILENAME)  # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
@@ -95,13 +86,20 @@ class TestApp(EWrapper, EClient):
 
 def main():
     counter = 1
-    while counter < NUMBER_OF_ATTEMPTS:
+    end_time = datetime(2021, 8, 6, 16, 58,0)
+    with open(START_DATE_FILENAME,
+              "r") as file1:
+        passwd = file1.read()
+
+    current = datetime.strptime(passwd, "%Y%m%d %H:%M:%S")
+    while current < end_time:
         if counter % 59 != 0:
             print(f'Attempt:{counter}')
             app = TestApp()
             app.connect('127.0.0.1', 7497, 120)
             app.run()
             sleep(1)
+            current = app.df['time_converted'].iloc[-1]
             counter = counter + 1
         else:
             sleep(360)
