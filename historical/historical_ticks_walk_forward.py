@@ -8,9 +8,9 @@ from ibapi.contract import * # @UnusedWildImport
 from time import sleep
 from datetime import datetime, timedelta
 
-NUMBER_OF_ATTEMPTS = 100
+NUMBER_OF_ATTEMPTS = 500
 START_DATE_FILENAME = 'start_date.txt'
-RECORDING_FILENAME = 'tick_history_subset1.csv'
+RECORDING_FILENAME = 'tick_history_0607.csv'
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
