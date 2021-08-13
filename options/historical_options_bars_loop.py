@@ -112,13 +112,13 @@ class TestApp(EWrapper, EClient):
 
     def historicalDataOperations_req(self):
 
-        chain = [128, 129, 130]
+        chain = [134, 135, 136]
         for self.i in chain:
             self.contract.symbol = "TQQQ"
             self.contract.secType = "OPT"
             self.contract.exchange = "SMART"
             self.contract.currency = "USD"
-            self.contract.lastTradeDateOrContractMonth = "20210730"
+            self.contract.lastTradeDateOrContractMonth = "20210813"
             self.contract.strike = self.i
             self.contract.right = "C"
             self.contract.multiplier = "100"
@@ -133,7 +133,7 @@ class TestApp(EWrapper, EClient):
         self.df = pd.DataFrame(self.data)
         print(self.df)
         self.df.to_csv('history.csv')
-        if len(self.df) == 78:
+        if len(self.df) == 44:  # check number of rows and then this will be it
             self.disconnect()
 
 def main():
