@@ -1,5 +1,5 @@
 import logging
-
+from datetime import datetime, timedelta
 import time
 
 
@@ -122,8 +122,9 @@ class TestApp(EWrapper, EClient):
             self.contract.strike = self.i
             self.contract.right = "C"
             self.contract.multiplier = "100"
-            self.reqHistoricalData(4103, self.contract, '',
-                                   "2 D", "30 mins", "MIDPOINT", 1, 1, False, [])
+            queryTime = (datetime.today() - timedelta(days=0)).strftime("%Y%m%d %H:%M:%S")
+            self.reqHistoricalData(4103, self.contract, queryTime,
+                                   "5 D", "5 mins", "MIDPOINT", 1, 1, False, [])
 
             # https://interactivebrokers.github.io/tws-api/historical_bars.html
 
@@ -133,8 +134,8 @@ class TestApp(EWrapper, EClient):
         self.df = pd.DataFrame(self.data)
         print(self.df)
         self.df.to_csv('history.csv')
-        if len(self.df) == 44:  # check number of rows and then this will be it
-            self.disconnect()
+        # if len(self.df) == 44:  # check number of rows and then this will be it
+        # self.disconnect()
 
 def main():
 

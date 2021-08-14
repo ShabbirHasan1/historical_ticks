@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 NUMBER_OF_ATTEMPTS = 100
 START_DATE_FILENAME = 'start_date.txt'
-RECORDING_FILENAME = 'tick_history_0713.csv'
+RECORDING_FILENAME = 'tick_history_0715.csv'
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -86,7 +86,7 @@ class TestApp(EWrapper, EClient):
 
 def main():
     counter = 1
-    end_time = datetime(2021, 7, 14, 16, 58, 0)
+    end_time = datetime(2021, 7, 16, 16, 58, 0)
     with open(START_DATE_FILENAME,
               "r") as file1:
         passwd = file1.read()
