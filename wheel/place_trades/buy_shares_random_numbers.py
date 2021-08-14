@@ -4,8 +4,7 @@ from ibapi.wrapper import EWrapper
 from ibapi.contract import * # @UnusedWildImport
 from ibapi.order import Order
 import time
-from datetime import datetime
-import pause
+import random
 
 # https://stackoverflow.com/questions/11523918/python-start-a-function-at-given-time
 # https://stackoverflow.com/questions/15088037/python-script-to-do-something-at-the-same-time-every-day
@@ -51,21 +50,16 @@ class TestApp(EWrapper, EClient):
 
     def check_and_send_order(self):
         counter = 0
-        sample_list = [3, 5, 6, 7, 8, 9, 10, 40, 3, 6, 7 ,8]
-        for i in sample_list:
+        while counter < 25:
             counter += 1
-            print(i)
+            rand_number = random.randint(0, 10)
+            print(rand_number)
             time.sleep(3)
-            if counter == 3:
+            if rand_number == 3:
                 self.sendOrder('SELL')
-            elif counter == 6:
+            elif rand_number == 6:
                 self.sendOrder('BUY')
         self.disconnect()
-    # def check_and_send_order(self):
-    #     pause.until(datetime(2021, 8, 14, 14, 26, 0))
-    #     self.sendOrder('BUY')
-    #     pause.until(datetime(2021, 8, 14, 14, 26, 15))
-    #     self.sendOrder('SELL')
 
 def main():
     app = TestApp()
