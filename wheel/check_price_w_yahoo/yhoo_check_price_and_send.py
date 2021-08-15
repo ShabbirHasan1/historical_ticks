@@ -17,6 +17,7 @@ class TestApp(EWrapper, EClient):
         self.nextValidOrderId = None
         self.permId2ord = {}
         self.contract = Contract()
+        self.recent_price = 0
 
     def nextValidId(self, orderId: int):
         super().nextValidId(orderId)
@@ -42,38 +43,35 @@ class TestApp(EWrapper, EClient):
         ticker = "NQ=F"
         data = yf.download(tickers=ticker, period="1d", interval='5m')
         df1 = pd.DataFrame(data)
-        print(df1)
-        recent_price = df1['Close'].iloc[-1]
-        print(f'recent price: {recent_price}')
+        # print(df1)
+        self.recent_price = df1['Close'].iloc[-1]
+        print(f'recent price: {self.recent_price}')
 
-    # def sendOrder(self, action):
-    #     # Create contract object
-    #     self.contract.symbol = 'NQ'
-    #     self.contract.secType = 'FUT'
-    #     self.contract.exchange = 'GLOBEX'
-    #     self.contract.currency = 'USD'
-    #     self.contract.lastTradeDateOrContractMonth = "202109"
-    #
-    #     order = Order()
-    #     order.action = action
-    #     order.totalQuantity = 1
-    #     order.orderType = "MKT"
-    #     self.placeOrder(self.nextOrderId(), self.contract, order)
-    #
+    def sendOrder(self, action):
+        # Create contract object
+        self.contract.symbol = 'NQ'
+        self.contract.secType = 'FUT'
+        self.contract.exchange = 'GLOBEX'
+        self.contract.currency = 'USD'
+        self.contract.lastTradeDateOrContractMonth = "202109"
+
+        order = Order()
+        order.action = action
+        order.totalQuantity = 1
+        order.orderType = "MKT"
+        self.placeOrder(self.nextOrderId(), self.contract, order)
+
     def check_and_send_order(self):
-        self.check_price()
+        counter = 0
+        while counter < 25:
+            counter += 1
+            self.check_price()
+            if self.recent_price > 15120:
+                self.sendOrder('SELL')
+            elif self.recent_price < 15100:
+                self.sendOrder('BUY')
+            time.sleep(10)
         self.disconnect()
-    #     counter = 0
-    #     while counter < 25:
-    #         counter += 1
-    #         rand_number = random.randint(0, 10)
-    #         print(rand_number)
-    #         time.sleep(3)
-    #         if rand_number == 3:
-    #             self.sendOrder('SELL')
-    #         elif rand_number == 6:
-    #             self.sendOrder('BUY')
-    #     self.disconnect()
 
 def main():
     app = TestApp()
