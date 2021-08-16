@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 NUMBER_OF_ATTEMPTS = 100
 START_DATE_FILENAME = 'start_date.txt'
-RECORDING_FILENAME = 'tick_history_0813.csv'
+RECORDING_FILENAME = 'tick_history_0715.csv'
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -46,7 +46,7 @@ class TestApp(EWrapper, EClient):
         current_time = str(passwd)
         # current_time = passwd.strftime("%Y%m%d %H:%M:%S")
         self.reqHistoricalTicks(18002, self.contract,
-                                " ", current_time, 1000, "TRADES", 0, True, []) # 1 is RTH and 0 is all hours
+                                current_time, " ", 1000, "TRADES", 0, True, []) # 1 is RTH and 0 is all hours
         # self.current_time = '20210731 09:39:33'
         # 20210731 09:39:33
 
@@ -65,7 +65,7 @@ class TestApp(EWrapper, EClient):
             self.df['time_converted'] = pd.to_datetime(self.df['time'], unit = 's') # convert to datetime
             self.df['time_converted'] = self.df['time_converted'] - timedelta(hours=4) # convert to EST
 
-        self.first_time = self.df['time_converted'].iloc[0] # 0 for first value and -1 for last value
+        self.first_time = self.df['time_converted'].iloc[-1] # 0 for first value and -1 for last value
 
         self.first_time = self.first_time.strftime("%Y%m%d %H:%M:%S")
 
@@ -77,7 +77,7 @@ class TestApp(EWrapper, EClient):
 
         df1 = pd.read_csv(RECORDING_FILENAME, index_col=0) # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
         print(df1)
-        frames = [self.df, df1]
+        frames = [df1, self.df]
         result = pd.concat(frames, ignore_index=True)
         print(result)
         result.to_csv(RECORDING_FILENAME)  # https://stackoverflow.com/questions/20845213/how-to-avoid-python-pandas-creating-an-index-in-a-saved-csv
@@ -86,13 +86,13 @@ class TestApp(EWrapper, EClient):
 
 def main():
     counter = 1
-    end_time = datetime(2021, 7, 12, 18, 0, 1)
+    end_time = datetime(2021, 7, 16, 16, 58, 0)
     with open(START_DATE_FILENAME,
               "r") as file1:
         passwd = file1.read()
 
     current = datetime.strptime(passwd, "%Y%m%d %H:%M:%S")
-    while current > end_time:
+    while current < end_time:
         if counter % 59 != 0:
             print(f'Attempt:{counter}')
             app = TestApp()
