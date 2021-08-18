@@ -5,7 +5,9 @@ from ibapi.wrapper import EWrapper
 # types
 from ibapi.common import *  # @UnusedWildImport
 from ibapi.contract import * # @UnusedWildImport
-import datetime
+from datetime import datetime
+from ibapi.order import Order
+import pause
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -24,8 +26,17 @@ class TestApp(EWrapper, EClient):
         self.num_contracts = 0
 
     def nextValidId(self, orderId: int):
+        super().nextValidId(orderId)
+        self.nextValidOrderId = orderId
+        print("NextValidId:", orderId)
+
         # we can start now
         self.start()
+
+    def nextOrderId(self):
+        oid = self.nextValidOrderId
+        self.nextValidOrderId += 1
+        return oid
 
     def start(self):
 
@@ -66,7 +77,7 @@ class TestApp(EWrapper, EClient):
     def tickByTickAllLast(self, reqId: int, tickType: int, time: int, price: float,
                           size: int, tickAttribLast: TickAttribLast, exchange: str,
                           specialConditions: str):
-        print('Time:', datetime.datetime.fromtimestamp(time),
+        print('Time:', datetime.fromtimestamp(time),
               "Price:", "{:.2f}".format(price),
               'Size:', size,
               'Avg. Px:', '{:.2f}'.format(self.recent_price),
@@ -77,6 +88,7 @@ class TestApp(EWrapper, EClient):
         self.data.append(price)
         self.running_list()
         self.calc_contracts()
+        self.check_and_send_order()
 
     def running_list(self):
         if len(self.data) > 5:
@@ -89,6 +101,19 @@ class TestApp(EWrapper, EClient):
             self.safety_num_shares = 0.75 * self.num_shares
             self.shares_to_buy = math.floor(self.safety_num_shares / 100) * 100
             self.num_contracts = self.shares_to_buy / 100
+
+    def sendOrder(self, action):
+        order = Order()
+        order.action = action
+        order.totalQuantity = self.shares_to_buy
+        order.orderType = "MKT"
+        self.placeOrder(self.nextOrderId(), self.contract, order)
+
+    def check_and_send_order(self):
+        trade_time = datetime(2021, 8, 18, 10, 0, 0)
+        pause.until(trade_time)
+        self.sendOrder('BUY')
+        print(f'BUY at {trade_time}')
 
 def main():
     app = TestApp()
