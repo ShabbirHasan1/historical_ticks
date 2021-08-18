@@ -26,6 +26,7 @@ class TestApp(EWrapper, EClient):
         self.safety_num_shares = 0
         self.shares_to_buy = 0
         self.num_contracts = 0
+        self.ticker = None
 
     def nextValidId(self, orderId: int):
         super().nextValidId(orderId)
@@ -62,7 +63,7 @@ class TestApp(EWrapper, EClient):
         self.data1.append([tag, value])
         self.df1 = pd.DataFrame(self.data1, columns=['Account', 'Value'])
         if len(self.df1) == 24:
-            print(self.df1)
+            # print(self.df1)
             self.df1.to_csv('acct_value.csv')
             self.cash_value = self.df1.loc[2, 'Value']
             print(f'cash value: {self.cash_value}')
@@ -81,23 +82,24 @@ class TestApp(EWrapper, EClient):
         self.placeOrder(self.nextOrderId(), self.contract, order)
 
     def check_and_send_order(self):
+        trade_time = datetime(2021, 8, 18, 12, 8, 0)
+        pause.until(trade_time)
         self.check_price()
         sleep(1)
         self.calc_contracts()
         sleep(1)
-        print(f'Buy {self.shares_to_buy} {self.contract.symbol} ')
-        trade_time = datetime(2021, 8, 18, 11, 53, 0)
-        pause.until(trade_time)
+        print(f'Buy {self.shares_to_buy} {self.ticker}')
+        sleep(1)
         self.sendOrder('BUY')
-        # print(f'BUY at {trade_time}')
+        print(f'BOT {self.shares_to_buy} {self.ticker} at {trade_time}')
         self.disconnect()
 
     def check_price(self):
         # valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
         # valid intervals: 1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo
         # https://pypi.org/project/yfinance
-        ticker = "QQQ"
-        data = yf.download(tickers=ticker, period="1d", interval='5m')
+        self.ticker = "QQQ"
+        data = yf.download(tickers=self.ticker, period="1d", interval='5m')
         df1 = pd.DataFrame(data)
         # print(df1)
         self.recent_price = df1['Close'].iloc[-1]
