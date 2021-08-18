@@ -22,25 +22,19 @@ class TestApp(EWrapper, EClient):
 
     def accountOperations_req(self):
         self.reqPositions()
-        # self.aggregator()
 
     def position(self, account: str, contract: Contract, position: float,
                                    avgCost: float):
         super().position(account, contract, position, avgCost)
         # print("Position.", "Account:", account, "Symbol:", contract.symbol, "SecType:", contract.secType,
         #       "Currency:", contract.currency,"Position:", position, "Avg cost:", avgCost)
-        i = [account, contract.symbol, contract.secType, position, avgCost]
-        #for i in self.data:
-        self.data.append(i)
-        print(self.data)
-        if len(self.data) == 4:
-            self.aggregator()
 
-    def aggregator(self):
+        self.data.append([account, contract.symbol, contract.secType, position, avgCost])
         self.df = pd.DataFrame(self.data, columns=['Account', 'Ticker', 'SecType', 'Position', 'Avg.Cost'])
-        # if len(self.df) == 2:
-        print(self.df)
+        if len(self.df) == 2:
+            print(self.df)
         self.df.to_csv('positions.csv')
+
         self.disconnect()
 
 def main():
