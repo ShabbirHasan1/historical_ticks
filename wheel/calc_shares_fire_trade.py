@@ -8,6 +8,8 @@ from ibapi.contract import * # @UnusedWildImport
 from datetime import datetime
 from ibapi.order import Order
 import pause
+import yfinance as yf
+from time import sleep
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -40,8 +42,9 @@ class TestApp(EWrapper, EClient):
 
     def start(self):
 
-        self.tickDataOperations_req()
+   #     self.tickDataOperations_req()
         self.accountOperations_req()
+        # self.check_and_send_order()
         print("Executing requests ... finished")
 
     def accountOperations_req(self):
@@ -59,50 +62,18 @@ class TestApp(EWrapper, EClient):
         self.data1.append([tag, value])
         self.df1 = pd.DataFrame(self.data1, columns=['Account', 'Value'])
         if len(self.df1) == 24:
-            # print(self.df1)
+            print(self.df1)
             self.df1.to_csv('acct_value.csv')
             self.cash_value = self.df1.loc[2, 'Value']
+            print(f'cash value: {self.cash_value}')
+            self.check_and_send_order()
 
-    def tickDataOperations_req(self):
-        # Create contract object
-        self.contract.symbol = 'TQQQ'
+    def sendOrder(self, action):
+        self.contract.symbol = 'QQQ'
         self.contract.secType = 'STK'
         self.contract.exchange = 'SMART'
         self.contract.currency = 'USD'
 
-        # Request tick data
-        self.reqTickByTickData(19002, self.contract, "AllLast", 0, False)
-
-    # Receive tick data
-    def tickByTickAllLast(self, reqId: int, tickType: int, time: int, price: float,
-                          size: int, tickAttribLast: TickAttribLast, exchange: str,
-                          specialConditions: str):
-        print('Time:', datetime.fromtimestamp(time),
-              "Price:", "{:.2f}".format(price),
-              'Size:', size,
-              'Avg. Px:', '{:.2f}'.format(self.recent_price),
-              'Cash:', self.cash_value,
-              'Shares:', self.num_shares,
-              'Shares to Trade:',self.shares_to_buy,
-              'Contracts:', self.num_contracts)
-        self.data.append(price)
-        self.running_list()
-        self.calc_contracts()
-        self.check_and_send_order()
-
-    def running_list(self):
-        if len(self.data) > 5:
-            self.data.pop(0)
-
-    def calc_contracts(self):
-        if len(self.data) > 0:
-            self.recent_price = sum(self.data) / len(self.data)
-            self.num_shares = float(self.cash_value) / (self.recent_price)
-            self.safety_num_shares = 0.75 * self.num_shares
-            self.shares_to_buy = math.floor(self.safety_num_shares / 100) * 100
-            self.num_contracts = self.shares_to_buy / 100
-
-    def sendOrder(self, action):
         order = Order()
         order.action = action
         order.totalQuantity = self.shares_to_buy
@@ -110,10 +81,37 @@ class TestApp(EWrapper, EClient):
         self.placeOrder(self.nextOrderId(), self.contract, order)
 
     def check_and_send_order(self):
-        trade_time = datetime(2021, 8, 18, 10, 0, 0)
+        self.check_price()
+        sleep(1)
+        self.calc_contracts()
+        sleep(1)
+        print(f'Buy {self.shares_to_buy} {self.contract.symbol} ')
+        trade_time = datetime(2021, 8, 18, 11, 53, 0)
         pause.until(trade_time)
         self.sendOrder('BUY')
-        print(f'BUY at {trade_time}')
+        # print(f'BUY at {trade_time}')
+        self.disconnect()
+
+    def check_price(self):
+        # valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
+        # valid intervals: 1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo
+        # https://pypi.org/project/yfinance
+        ticker = "QQQ"
+        data = yf.download(tickers=ticker, period="1d", interval='5m')
+        df1 = pd.DataFrame(data)
+        # print(df1)
+        self.recent_price = df1['Close'].iloc[-1]
+        print(f'recent price: {self.recent_price}')
+
+    def calc_contracts(self):
+        # if len(self.data) > 0:
+        # self.recent_price = sum(self.data) / len(self.data)
+        # self.check_price()
+        self.num_shares = float(self.cash_value) / (self.recent_price)
+        self.safety_num_shares = 0.75 * self.num_shares
+        self.shares_to_buy = math.floor(self.safety_num_shares / 100) * 100
+        self.num_contracts = self.shares_to_buy / 100
+        print(f'shares to trade: {self.shares_to_buy}')
 
 def main():
     app = TestApp()
