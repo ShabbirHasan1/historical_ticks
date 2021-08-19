@@ -35,15 +35,16 @@ class TestApp(EWrapper, EClient):
         # print(self.data)
         # if len(self.data) == 4:
         self.df.loc[len(self.df)] = i
-        print(self.df)
+        # print(self.df)
         # self.df.to_csv('positions.csv')
 
     def positionEnd(self):
         super().positionEnd()
         print('PositionEnd')
-        self.grab_value()
+        self.calc_shares()
 
-    def grab_value(self):
+    def calc_shares(self):
+        print(self.df)
         share_count = self.df['Position'].iloc[-1]
         print(f'share count: {share_count}')
         self.disconnect()
