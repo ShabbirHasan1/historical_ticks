@@ -12,6 +12,7 @@ class TestApp(EWrapper, EClient):
         self.contract = Contract()
         self.data = []
         self.df = pd.DataFrame()
+        self.recent_px = 0
 
     def nextValidId(self, orderId: int):
         super().nextValidId(orderId)
@@ -59,6 +60,8 @@ class TestApp(EWrapper, EClient):
 
     def get_px(self):
         print(self.df)
+        self.recent_px = self.df.loc[0, 'Price']
+        print(f'recent price: {self.recent_px}')
         self.disconnect()
 
 def main():
