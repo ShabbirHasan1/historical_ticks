@@ -8,6 +8,7 @@ class TestApp(EWrapper, EClient):
         EClient.__init__(self, wrapper=self)
         self.data = []
         self.df = pd.DataFrame()
+        self.cash_value = 0
 
     def nextValidId(self, orderId: int):
         super().nextValidId(orderId)
